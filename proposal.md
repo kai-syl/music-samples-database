@@ -18,7 +18,7 @@ The database will serve to describe the audio samples I've used in my electronic
   * Attributes: Name
 * Type: Sample's 'release' (the album, single, EP, etc.)
   * Instances: Anemoia, Flow State
-* Type: Song sample is featured on
+* Type: Personal song sample is featured on
   * Instances: Name 1, name 2, name 3, name 4
   * Attributes: Length, status of released or not released 
 
