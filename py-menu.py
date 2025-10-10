@@ -1,3 +1,4 @@
+### Simple menu script
 import mysql.connector, os
 
 def getConnection():
