@@ -40,6 +40,26 @@ def renderTablePost():
     output = render_template('table.html', title=title, genre=genre, key=key, bpm=bpm, ISRC=ISRC)
     return output
 
+@app.route('/artisttable', methods=['GET'])
+def showArtists():
+    connection = getConnection()
+    cursor = connection.cursor()
+
+    # If new entry found in GET variables, insert into db
+    newName = request.args.get('name')
+    newNationality = request.args.get('nationality')
+    newGenre = request.args.get('genre')
+    if newName is not  None and newNationality is not None and newGenre is not None:
+        cursor.execute("INSERT into artist (name, nationality, genre) values (%s, %s, %s)", (newName, newNationality, newGenre))
+        connection.commit()
+
+    # Get current values of the artist table
+    cursor.execute("SELECT * from artist")
+    results = cursor.fetchall()
+    cursor.close()
+    connection.close()
+    return render_template('artistTable.html', collection=results)
+
 @app.route('/songtable', methods=['GET'])
 def showSongs():
     connection = getConnection()

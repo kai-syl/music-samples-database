@@ -1,0 +1,40 @@
+{% include 'header.html' %}
+
+<h1>Artist table</h1>
+<h3>Artists in database with surrogate key, name, nationality, and main genre</h3>
+<table border='1' width="60%">
+    <tr>
+    <th>artist_id</th>
+    <th>Name</th>
+    <th>Nationality</th>
+    <th>Main genre</th>
+    </tr>
+    
+    {% for row in collection %}
+    <tr>
+        <td>
+            {{row[0]}}
+        </td>
+        <td>
+            {{row[1]}}
+        </td>
+        <td>
+            {{row[2]}}
+        </td>
+        <td>
+            {{row[3]}}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<h2>Insert a new artist here:</h2>
+
+<form action="">
+    Name: <input type="text" name="name"><br />
+    Nationality: <input type="text" name="nationality"><br />
+    Genre: <input type="text" name="genre"><br />
+    <input type="submit" value="Submit">
+</form>
+
+{% include 'footer.html' %}
