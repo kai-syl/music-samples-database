@@ -1,0 +1,33 @@
+{% include 'header.html' %}
+
+<h1>Song table</h1>
+<h3>Songs in database with surrogate key, title, genre, music key, beats per minute (BPM), and ISRC (if exists)</h3>
+<p>for static webpage assignment</p>
+<table border='1' width="60%">
+    <th>song_id</th>
+    <th>title</th>
+    <th>genre</th>
+    <th>key</th>
+    <th>bpm</th>
+    <th>ISRC</th>
+
+    <tr>
+        <td>6</td><td>Emily</td><td>jazz</td><td>CM</td><td>115</td><td>JPI291065403</td>
+    </tr>
+    <tr>
+        <td>7</td><td>Cyanica</td><td>dance</td><td>Am</td><td>123</td><td>QT3F32561928</td>
+    </tr>
+    <tr>
+        <td>12</td><td>Baby Blue</td><td>pop</td><td>C#M</td><td>125</td><td>GBUM72503569</td>
+    </tr>
+    <tr>
+        <td>null</td>
+        <td>{{title}}</td>
+        <td>{{genre}}</td>
+        <td>{{key}}</td>
+        <td>{{bpm}}</td>
+        <td>{{ISRC}}</td>
+    </tr>
+</table>
+
+{% include 'footer.html' %}

@@ -1,0 +1,13 @@
+{% include "header.html" %}
+
+<h2>Enter song data</h2>
+<form action="/gettable" method="GET">
+    Title: <input type="text" name="title"><br />
+    Genre: <input type="text" name="genre"><br />
+    Key: <input type="text" name="key"><br />
+    BPM: <input type="number" name="bpm"><br />
+    ISRC: <input type="text" name="ISRC"><br />
+    <input type="submit" name="Submit">
+</form>
+
+{% include "footer.html" %}

@@ -1,0 +1,50 @@
+{% include 'header.html' %}
+
+<h1>Song table</h1>
+<h3>Songs in database with surrogate key, title, genre, music key, beats per minute (BPM), and ISRC (if exists)</h3>
+<table border='1' width="60%">
+    <tr>
+    <th>song_id</th>
+    <th>Title</th>
+    <th>Genre</th>
+    <th>Key</th>
+    <th>BPM</th>
+    <th>ISRC</th>
+    </tr>
+    
+    {% for row in collection %}
+    <tr>
+        <td>
+            {{row[0]}}
+        </td>
+        <td>
+            {{row[1]}}
+        </td>
+        <td>
+            {{row[2]}}
+        </td>
+        <td>
+            {{row[3]}}
+        </td>
+        <td>
+            {{row[4]}}
+        </td>
+        <td>
+            {{row[5]}}
+        </td>        
+    </tr>
+    {% endfor %}
+</table>
+
+<h2>Insert a new song here:</h2>
+
+<form action="">
+    Title: <input type="text" name="title"><br />
+    Genre: <input type="text" name="genre"><br />
+    Key: <input type="text" name="key" maxlength="5"><br />
+    BPM: <input type="number" name="bpm"><br />
+    ISRC: <input type="text" name="isrc"><br />
+    <input type="submit" value="Submit">
+</form>
+
+{% include 'footer.html' %}
