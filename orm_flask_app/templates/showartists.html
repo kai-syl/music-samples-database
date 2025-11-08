@@ -1,0 +1,43 @@
+{% include 'header.html' %}
+
+<div class="card">
+<p><a href='insertartist'><button type="button">Insert artist</button></a></p>
+
+<table>
+    <tr>
+    <th>artist_id</th>
+    <th>Name</th>
+    <th>Nationality</th>
+    <th>Genre</th>
+    <th>Update</th>
+    <th>Delete</th>
+    </tr>
+    {% for artist in artists %}
+    <tr>
+        <td>
+            {{artist.artist_id}}
+        </td>
+        <td>
+            {{artist.name}}
+        </td>
+        <td>
+            {{artist.nationality}}
+        </td>
+        <td>
+            {{artist.genre}}
+        </td>     
+        <td id="button">
+            <a href="updateform?artist_id={{artist.artist_id}}">
+                <button type="button">Update</button>
+            </a>
+        </td>
+        <td id="button">
+            <a href="delete?artist_id={{artist.artist_id}}" onclick="return confirm('Are you sure?')">
+                <button type="button">Delete</button>
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+</div>
+{% include 'footer.html' %}

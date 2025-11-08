@@ -1,0 +1,61 @@
+{% include 'header.html' %}
+
+<div class="card">
+<p><a href='insertsong'><button type="button">Insert song</button></a></p>
+
+
+<table>
+    <tr>
+    <th>song_id</th>
+    <th>Title</th>
+    <th>Genre</th>
+    <th>Key</th>
+    <th>BPM</th>
+    <th>ISRC</th>
+    <th>Update</th>
+    <th>Delete</th>
+    </tr>
+    {% for song in songs %}
+    <tr>
+        <td>
+            {{song.song_id}}
+        </td>
+        <td>
+            {{song.title}}
+        </td>
+        <td>
+            {{song.genre}}
+        </td>
+        <td>
+            {{song.key}}
+        </td>
+        <td>
+            {{song.bpm}}
+        </td>
+        <td>
+            {{song.ISRC}}
+        </td>        
+        <td id="button">
+            <a href="updateform?song_id={{song.song_id}}">
+                <button type="button">Update</button>
+            </a>
+        </td>
+        <td id="button">
+            <a href="delete?song_id={{song.song_id}}" onclick="return confirm('Are you sure?')">
+                <button type="button">Delete</button>
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+</div>
+<!--ul>
+    {% for song in songs %}
+    <li> {{song.song_id}} - {{song.title}} - {{song.key}} - {{song.bpm}}BPM - {{song.ISRC}}
+        <a href="updateform?song_id={{song.song_id}}">update</a>
+        <a href="deleteartist?song_id={{song.song_id}}" onclick="return confirm('Are you sure?')">delete</a>
+    </li>
+    {% endfor %}
+</ul-->
+
+{% include 'footer.html' %}

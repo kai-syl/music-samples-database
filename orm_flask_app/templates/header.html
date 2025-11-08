@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Kai's Flask app</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    </head>
+
+    <body>
+        <header>
+        <h1 id="centered">Flask app yippee</h1>
+        <h3 id="centered">
+            <nav>
+                <a href="/">Home</a>
+                <a href="/read?t=artist">Artists</a>
+                <a href="/read?t=song">Songs</a>
+            </nav>
+        </h3>
+        <hr>
+        </header>

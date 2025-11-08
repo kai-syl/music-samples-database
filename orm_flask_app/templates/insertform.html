@@ -1,0 +1,25 @@
+{% include 'header.html' %}
+
+<div class="card">
+{% if t == "artist" %}
+<form action="newartist">
+    <label for="name">Artist name: </label><input id="name" type="text" name="name" /><br />
+    <label for="nationality">Nationality: </label><input id="nationality" type="text" name="nationality" /><br />
+    <label for="genre">Genre: </label><input id="genre" type="text" name="genre" /><br />
+    <button type="submit">Insert new artist</button>
+</form>
+
+{% elif t == "song" %}
+
+<form action="newsong">
+    <label for="title">Song title: </label><input id="title" type="text" name="title" /><br />
+    <label for="key">Key: </label><input id="key" type="text" name="key" /><br />
+    <label for="bpm">BPM: </label><input id="bpm" type="number" min="10" max="400" name="bpm" /><br/>
+    <label for="genre">Genre: </label><input id="genre" type="text" name="genre" /><br/>
+    <label for="ISRC">ISRC: </label><input id="ISRC" type="text" name="ISRC" maxlength="12"/><br/>
+    <button type="submit">Insert new song</button>
+</form>
+
+{% endif %}
+</div>
+{% include 'footer.html' %}

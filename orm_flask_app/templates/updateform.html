@@ -1,0 +1,26 @@
+{% include 'header.html' %}
+
+<div class="card">
+{% if request.args.artist_id is defined %}
+<form action="updateartist">
+    <input type="hidden" name="artist_id" value="{{artist.artist_id}}" />
+    <label for="name">Artist name: </label><input id="name" type="text" name="name" / value="{{artist.name}}"><br />
+    <label for="nationality">Nationality: </label><input id="nationality" type="text" name="nationality" value="{{artist.nationality}}"/><br />
+    <label for="genre">Genre: </label><input id="genre" type="text" name="genre" value="{{artist.genre}}"/><br />
+    <button type="submit">Update artist</button>
+</form>
+
+{% elif request.args.song_id is defined %}
+<form action="updatesong">
+    <input type="hidden" name="song_id" value="{{song.song_id}}" />
+    <label for="title">Title: </label><input id="title" type="text" name="title" / value="{{song.title}}"><br />
+    <label for="key">Key: </label><input id="key" type="text" name="key" value="{{song.key}}"/><br />
+    <label for="genre">Genre: </label><input id="genre" type="text" name="genre" value="{{song.genre}}"/><br />
+    <label for="bpm">BPM: </label><input id="bpm" type="number" name="bpm" min="10" max="400" value="{{song.bpm}}"/><br />
+    <label for="ISRC">ISRC: </label><input id="ISRC" type="text" name="ISRC" maxlength="12" value="{{song.ISRC}}"/><br/>
+    <button type="submit">Update song</button>
+</form>
+
+{% endif %}
+</div>
+{% include 'footer.html' %}
