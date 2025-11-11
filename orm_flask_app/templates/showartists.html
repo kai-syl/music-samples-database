@@ -5,20 +5,16 @@
 
 <table>
     <tr>
-    <th>artist_id</th>
     <th>Name</th>
     <th>Nationality</th>
     <th>Genre</th>
-    <th>Update</th>
-    <th>Delete</th>
+    <th id="button">Update</th>
+    <th id="button">Delete</th>
     </tr>
     {% for artist in artists %}
     <tr>
         <td>
-            {{artist.artist_id}}
-        </td>
-        <td>
-            {{artist.name}}
+            <a href="read?t=artist&a={{artist.artist_id}}">{{artist.name}}</a>
         </td>
         <td>
             {{artist.nationality}}

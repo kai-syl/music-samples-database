@@ -172,6 +172,11 @@ table th {
   background: #fafafa;
   color: var(--muted);
   font-weight: 600;
+  text-align: left;
+}
+
+table th#button {
+  text-align: center;
 }
 
 /* Footer */

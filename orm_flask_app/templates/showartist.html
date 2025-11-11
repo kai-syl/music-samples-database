@@ -1,0 +1,38 @@
+{% include 'header.html' %}
+
+<div class="card">
+<p><a href='updateform?artist_id={{artist.artist_id}}"'><button type="button">Update</button></a>
+<a href="delete?artist_id={{artist.artist_id}}" onclick="return confirm('Are you sure?')">
+                <button type="button">Delete</button>
+</a></p>
+<table>
+    <tr>
+    <th>artist_id</th>
+    <th>Name</th>
+    <th>Nationality</th>
+    <th>Genre</th>
+    <th>Songs</th>
+    </tr>
+    
+    <tr>
+        <td>
+            {{artist.artist_id}}
+        </td>
+        <td>
+            {{artist.name}}
+        </td>
+        <td>
+            {{artist.nationality}}
+        </td>
+        <td>
+            {{artist.genre}}
+        </td>     
+        <td>
+            {% for song in artist.songs %}
+            <a href="read?t=song&song_id={{song.song_id}}">{{song.title}}</a><br/>
+            {% endfor %}
+        </td>
+    </tr>
+</table>
+</div>
+{% include 'footer.html' %}
