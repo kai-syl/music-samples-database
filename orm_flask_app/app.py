@@ -1,56 +1,35 @@
 from flask import Flask, render_template, redirect, request
 from flask_sqlalchemy import SQLAlchemy
 import os
+from extensions import db
+from models import *
 
 host=os.environ['SQL_HOST']
 user=os.environ['SQL_USER']
 password=os.environ['SQL_PWD']
 db_name=os.environ['SQL_DB']
-app = Flask(__name__)
 
+app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{user}:{password}@{host}/{db_name}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
+db.init_app(app)
 
-artist_song = db.Table('artist_song',
-    db.Column('artist_id', db.Integer, db.ForeignKey('artist.artist_id'), primary_key=True),
-    db.Column('song_id', db.Integer, db.ForeignKey('song.song_id'), primary_key=True)
-)
-
-class Artist(db.Model):
-    __tablename__ = 'artist'
-    artist_id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
-    nationality = db.Column(db.String)
-    genre = db.Column(db.String)
-
-class Song(db.Model):
-    __tablename__ = 'song'
-    song_id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String)
-    key = db.Column(db.String)
-    bpm = db.Column(db.String)
-    genre = db.Column(db.String)
-    ISRC = db.Column(db.String)
-    artists = db.relationship("Artist", secondary=artist_song, backref='songs', lazy='dynamic')
+def updateArtist_Song(action, artist, song):
+    if action == 'insert':
+        song.artists.append(artist)
+    elif action == 'drop':
+        song.artists.remove(artist)
+    else:
+        pass
 
 @app.route('/')
 def index():
     return render_template("home.html")
 
+### Artists
 @app.route('/insertartist')
 def insertArtistForm():
     return render_template("insertform.html", t="artist")
-
-@app.route('/insertsong')
-def insertSongForm():
-    return render_template("insertform.html", t="song")
-
-@app.route('/insertartistsong')
-def insertArtistSongForm():
-    artists = Artist.query.all()
-    songs = Song.query.all()
-    return render_template('insertform.html', t="artist_song", artists=artists, songs=songs)
 
 @app.route('/newartist')
 def insertArtist():
@@ -65,6 +44,20 @@ def insertArtist():
         return redirect("read?t=artist")
     else:
         return redirect("insertartist")
+    
+@app.route('/updateartist')
+def updateArtist():
+    artist = Artist.query.get(request.args.get('artist_id'))
+    artist.name = request.args.get('name')
+    artist.nationality = request.args.get('nationality')
+    artist.genre = request.args.get('genre')
+    db.session.commit()
+    return redirect('read?t=artist')
+
+### Songs
+@app.route('/insertsong')
+def insertSongForm():
+    return render_template("insertform.html", t="song")
 
 @app.route('/newsong')
 def insertSong():
@@ -79,20 +72,38 @@ def insertSong():
         db.session.add(song)
         db.session.commit()
         return redirect("read?t=song")
-
-@app.route('/newartistsong')
-def insertArtistSong():
-    artist_id = request.args.get('artist_id')
+    
+@app.route('/updatesong')
+def updateSong():
     song_id = request.args.get('song_id')
-    if artist_id is not None and song_id is not None:
-        artist = Artist.query.get(artist_id)
-        song = Song.query.get(song_id)
-        song.artists.append(artist)
-        db.session.commit()
-        return redirect('/read?t=song')
-    else:
-        return redirect('insertartistsong')
+    song = Song.query.get(song_id)
+    song.title = request.args.get('title')
+    song.key = request.args.get('key')
+    song.genre = request.args.get('genre')
+    song.bpm = request.args.get('bpm')
+    song.ISRC = request.args.get('ISRC')
+    artist_id = request.args.get('artist_id')
+    
+    # If artist ID not blank, add to artist_song
+    if artist_id:
+        artistToInsert = Artist.query.get(artist_id)
+        updateArtist_Song('insert', artistToInsert, song)
 
+    # If artistsToRemove not blank, remove from artist_song
+    if request.args.get('artistsToRemove'):
+        removeList = request.args.get('artistsToRemove').split(',')
+        print(removeList)
+        for id in removeList:
+            if id == '' or id is None:
+                continue
+            artist = Artist.query.get(id)
+            #song.artists.remove(artist)
+            updateArtist_Song('drop', artist, song)
+
+    db.session.commit()
+    return redirect(f'read?t=song&song_id={song_id}')
+
+### Multi-use pages depending on GET variables
 @app.route('/read')
 def read():
     table = request.args.get('t')
@@ -132,32 +143,6 @@ def updateArtistForm():
             return render_template("updateform.html", song=song, otherArtists=otherArtists)
     else:
         return redirect("/")
-
-
-@app.route('/updateartist')
-def updateArtist():
-    artist = Artist.query.get(request.args.get('artist_id'))
-    artist.name = request.args.get('name')
-    artist.nationality = request.args.get('nationality')
-    artist.genre = request.args.get('genre')
-    db.session.commit()
-    return redirect('read?t=artist')
-
-@app.route('/updatesong')
-def updateSong():
-    song_id = request.args.get('song_id')
-    song = Song.query.get(song_id)
-    song.title = request.args.get('title')
-    song.key = request.args.get('key')
-    song.genre = request.args.get('genre')
-    song.bpm = request.args.get('bpm')
-    song.ISRC = request.args.get('ISRC')
-    # stand-in until I write full artist_song update capability, not just create:
-    artist = Artist.query.get(request.args.get('artist_id'))
-    song.artists.append(artist)
-
-    db.session.commit()
-    return redirect(f'read?t=song&song_id={song_id}')
 
 @app.route('/delete')
 def delete():

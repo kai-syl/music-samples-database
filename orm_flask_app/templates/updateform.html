@@ -1,4 +1,5 @@
 {% include 'header.html' %}
+<script type="text/javascript" src="{{ url_for('static', filename='updateutils.js') }}"></script>
 
 <div class="card">
 {% if request.args.artist_id is defined %}
@@ -16,7 +17,9 @@
     <label for="title">Title: </label><input id="title" type="text" name="title" value="{{song.title}}"><br />
     <label for="artist">Current artist(s): 
         {% for artist in song.artists %}
-        <br/>{{artist.name}}
+        <br/><div id='artist_id[{{artist.artist_id}}]' name="{{artist.name}}">{{artist.name}}  
+        <button type="button" id="deleteartist" onclick="removeButton('{{artist.artist_id}}', '{{artist.name}}')">Remove</button>
+        </div>
         {% endfor %}
         <br/><br/>Add artist:
     </label>
@@ -26,7 +29,12 @@
             <option value="{{artist.artist_id}}">{{artist.name}}</option>
             {% endfor %}
         </select>
-        
+    
+    <label for="artistsToRemove">Artists to remove: </label>
+        <input id="artistsToRemove" type="hidden" name="artistsToRemove" value=""/>
+        <p id="artistsToRemoveDisplay">
+        </p>
+        <button type="button" onclick="resetRemovalList()">Reset</button>
     <label for="key">Key: </label><input id="key" type="text" name="key" value="{{song.key}}"/><br />
     <label for="genre">Genre: </label><input id="genre" type="text" name="genre" value="{{song.genre}}"/><br />
     <label for="bpm">BPM: </label><input id="bpm" type="number" name="bpm" min="10" max="400" value="{{song.bpm}}"/><br />
