@@ -1,0 +1,40 @@
+{% include 'header.html' %}
+
+<div class="card">
+<p><a href="#"><button type="button">Update</button></a>
+<a href="#" onclick="return confirm('Are you sure?')">
+                <button type="button">Delete</button>
+</a></p>
+<table>
+    <tr>
+    <th>source_id</th>
+    <th>Name</th>
+    <th>Type</th>
+    <th>Custodian</th>
+    <th>Price</th>
+    <th>Billed</th>
+    </tr>
+    
+    <tr>
+        <td>
+            {{repo.source_id}}
+        </td>
+        <td>
+            {{repo.name}}
+        </td>
+        <td>
+            {{repo.type}}
+        </td>   
+        <td>
+            {{repo.custodian}}
+        </td>
+        <td>
+            ${{repo.price}}
+        </td>
+        <td>
+            {{repo.billed}}
+        </td>
+    </tr>
+</table>
+</div>
+{% include 'footer.html' %}

@@ -1,0 +1,43 @@
+{% include 'header.html' %}
+
+<div class="card">
+<p><a href="#"><button type="button">Update</button></a>
+<a href="#" onclick="return confirm('Are you sure?')">
+                <button type="button">Delete</button>
+</a></p>
+<table>
+    <tr>
+    <th>sample_id</th>
+    <th>Instrument/Type</th>
+    <th>Genre</th>
+    <th>Used on</th>
+    <th>Source</th>
+    </tr>
+    
+    <tr>
+        <td>
+            {{sample.sample_id}}
+        </td>
+        <td>
+            {{sample.instrument}}
+        </td>
+        <td>
+            {{sample.genre}}
+        </td>   
+        <td>
+            {% for song in sample.on_songs %}
+            <a href="read?t=song&song_id={{song.song_id}}">{{song.title}}</a><br/>
+            {% endfor %}
+        </td>
+        <td>
+            {% if song is defined %}
+                <a href="read?t=song&song_id={{song.song_id}}">{{song.title}}</a>
+            {% endif %}
+            {% if repo is defined %}
+                <a href="repo?id={{repo.source_id}}">{{repo.name}}</a>
+            {% endif %}
+        </td>
+    </tr>
+</table>
+</div>
+{% include 'footer.html' %}

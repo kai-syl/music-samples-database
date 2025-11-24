@@ -1,0 +1,48 @@
+{% include 'header.html' %}
+
+<div class="card">
+<p><a href='insertsample'><button type="button">Insert sample</button></a></p>
+
+<table>
+    <tr>
+    <th id="button">View</th>
+    <th>Instrument/Type</th>
+    <th>Genre</th>
+    <th>Source</th>
+    <!--th> Used on </th-->
+    <th id="button">Update</th>
+    <th id="button">Delete</th>
+    </tr>
+    {% for sample in samples %}
+    <tr>
+        <td id="button">
+            <a href="?sample_id={{sample.sample_id}}"><button type="button">View</button></a>
+        </td>
+        <td>
+            {{sample.instrument}}
+        </td>
+        <td>
+            {{sample.genre}}
+        </td>     
+        <td>
+            {% for source_id, link in sources.items() %}
+                {% if source_id == sample.source_id %}
+                    <a href="{{link.link}}">{{link.name}}</a>
+                {% endif %}
+            {% endfor %}
+        </td>
+        <td id="button">
+            <a href="#">
+                <button type="button">Update</button>
+            </a>
+        </td>
+        <td id="button">
+            <a href="#" onclick="return confirm('Are you sure?')">
+                <button type="button">Delete</button>
+            </a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+</div>
+{% include 'footer.html' %}

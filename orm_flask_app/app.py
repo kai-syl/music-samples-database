@@ -104,6 +104,7 @@ def updateSong():
     return redirect(f'read?t=song&song_id={song_id}')
 
 ### Multi-use pages depending on GET variables
+# Going to move away from this design later
 @app.route('/read')
 def read():
     table = request.args.get('t')
@@ -123,10 +124,57 @@ def read():
         else:
             artists = Artist.query.all()
             output = render_template("showartists.html", artists=artists)
+    else:
+        output = redirect("/")
     return output
 
+@app.route('/samples')
+def showSamples():
+    sample_id = request.args.get('sample_id')
+    if sample_id:
+        sample = Sample.query.get(sample_id)
+        source_id = sample.source_id
+        if SampleSong.query.filter_by(source_id=source_id).first() is not None:
+            sampleType = "song"
+            sampleSong = SampleSong.query.filter_by(source_id=source_id).first()
+        else:
+            sampleType = "repo"
+        
+        if sampleType == "song":
+            song = Song.query.filter_by(song_id=sampleSong.song_id).first()
+            return render_template("showsample.html", sample=sample, song=song)
+        elif sampleType == "repo":
+            repo = Repo.query.filter_by(source_id=source_id).first()
+            return render_template("showsample.html", sample=sample, repo=repo)
+
+    else:
+        samples = Sample.query.all()
+        sources = {}
+        for sample in samples:
+            source_id = sample.source_id
+            if SampleSong.query.filter_by(source_id=source_id).first() is not None:
+                sampleType = "song"
+                sampleSong = SampleSong.query.filter_by(source_id=source_id).first()
+                song = Song.query.filter_by(song_id=sampleSong.song_id).first()
+                sources[source_id] = {"link": "read?t=song&song_id=" + str(song.song_id), "name": song.title}
+            else:
+                sampleType = "repo"
+                repo = Repo.query.filter_by(source_id=source_id).first()
+                sources[source_id] = {"link": "repo?id=" + str(repo.source_id), "name": repo.name}
+        return render_template("showsamples.html", samples=samples, sources=sources)
+
+@app.route('/repo')
+def showRepos():
+    source_id = request.args.get('id')
+    if source_id:
+        repo = Repo.query.get(source_id)
+        return render_template("showrepo.html", repo=repo)
+    else:
+        repos = Repo.query.all()
+        return render_template("showrepos.html", repos=repos)
+
 @app.route('/updateform')
-def updateArtistForm():
+def updateForm():
     if request.args.get('artist_id') is not None:
         artist = Artist.query.get(request.args.get('artist_id'))
         if artist is None:
