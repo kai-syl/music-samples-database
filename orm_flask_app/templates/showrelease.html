@@ -1,0 +1,62 @@
+{% include 'header.html' %}
+
+<div class="card">
+
+
+<form action="/release" method="get">
+    <label for="UPC">Select a release:</label>
+    <select name="UPC" id="UPC" onchange="this.form.submit()">
+        <option value="">--Please select a release--</option>
+        {% if release is defined %}
+        <option value="{{release.UPC}}">{{release.title}}</option>
+        {% endif %}
+        {% for release in otherReleases %}
+        <option value="{{release.UPC}}">{{release.title}}</option>
+        {% endfor %}
+    </select>
+</form><br/>
+<p class="card"><a href="/insertrelease"><button type="button">New release</button></a></p>
+
+{% if release is defined %}
+
+<p class="card"><a href='updateform?UPC={{release.UPC}}'><button type="button">Update</button></a>
+<a href="delete?UPC={{release.UPC}}" onclick="return confirm('Are you sure?')">
+                <button type="button">Delete</button>
+</a></p>
+
+<table>
+    <tr>
+    <th>Title</th>
+    <th>Release date</th>
+    <th>Type</th>
+    <th># Songs</th>
+    <th>UPC</th>
+    <th>Songs in database</th>
+    </tr>
+    <tr>
+        <td>
+            {{release.title}}
+        </td>
+        <td>
+            {{release.releaseDate}}
+        </td>
+        <td>
+            {{release.type}}
+        </td>
+        <td>
+            {{release.numSongs}}
+        </td>
+        <td>
+            {{release.UPC}}
+        </td>
+        <td>
+            {% for song in release.songs %}
+            <a href="read?t=song&song_id={{song.song_id}}">{{song.title}}</a><br/>
+            {% endfor %}
+        </td>
+    </tr>
+</table>
+</div>
+
+{% endif %}
+{% include 'footer.html' %}

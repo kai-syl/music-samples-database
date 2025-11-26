@@ -18,7 +18,7 @@
     <label for="artist">Current artist(s): 
         {% for artist in song.artists %}
         <br/><div id='artist_id[{{artist.artist_id}}]' name="{{artist.name}}">{{artist.name}}  
-        <button type="button" id="deleteartist" onclick="removeButton('{{artist.artist_id}}', '{{artist.name}}')">Remove</button>
+        <button type="button" id="deleteartist" onclick="removeButton({artist_id: '{{artist.artist_id}}', artist_name: '{{artist.name}}'})">Remove</button>
         </div>
         {% endfor %}
         <br/><br/>Add artist:
@@ -34,12 +34,99 @@
         <input id="artistsToRemove" type="hidden" name="artistsToRemove" value=""/>
         <p id="artistsToRemoveDisplay">
         </p>
-        <button type="button" onclick="resetRemovalList()">Reset</button>
+        <button type="button" onclick="resetRemovalList('artist')">Reset</button>
     <label for="key">Key: </label><input id="key" type="text" name="key" value="{{song.key}}"/><br />
     <label for="genre">Genre: </label><input id="genre" type="text" name="genre" value="{{song.genre}}"/><br />
     <label for="bpm">BPM: </label><input id="bpm" type="number" name="bpm" min="10" max="400" value="{{song.bpm}}"/><br />
     <label for="ISRC">ISRC: </label><input id="ISRC" type="text" name="ISRC" maxlength="12" value="{{song.ISRC}}"/><br/>
     <button type="submit">Update song</button>
+</form>
+
+{% elif request.args.sample_id is defined %}
+<form action="updatesample">
+    <input type="hidden" name="sample_id" value="{{sample.sample_id}}" />
+    <label for="instrument">Instrument: </label><input id="instrument" type="text" name="instrument" value="{{sample.instrument}}"/><br />
+    <label for="genre">Genre: </label><input id="genre" type="text" name="genre" value="{{sample.genre}}"/><br />
+    <label for="source">
+        Source: 
+        <select id="source_id" name="source_id">
+            <option value="{{sample.source_id}}">{{source}}</option>
+            {% for source in otherSources %}
+            <option value="{{source.source_id}}">
+                {% if source.name %}
+                {{source.name}}
+                {% elif source.title %}
+                {{source.title}}
+                {% endif %}
+            </option>
+            {% endfor %}
+        </select>
+    </label>
+    <label for="used_on">
+        Used on:
+        <br/>
+        {% for song in sample.on_songs %}
+        <div id='song_id[{{song.song_id}}]' name="{{song.title}}">{{song.title}}  
+        <button type="button" id="deletesong" onclick="removeButton({song_id: '{{song.song_id}}', song_title: '{{song.title}}'})">Remove</button>
+        </div>
+        {% endfor %}
+
+        <label for="songsToRemove">Songs to remove: </label>
+        <input id="songsToRemove" type="hidden" name="songsToRemove" value=""/>
+        <p id="songsToRemoveDisplay">
+        </p>
+        <button type="button" onclick="resetRemovalList('song')">Reset</button>
+
+        <br/><br/>Add to song:
+        <select id="song_id" name="song_id">
+            <option value="">--Please select a song--</option>
+            {% for song in otherSongs %}
+            <option value="{{song.song_id}}">{{song.title}}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <button type="submit">Update sample</button>
+</form>
+
+{% elif request.args.UPC is defined %}
+<form action="updaterelease">
+    <label for="UPC">UPC: </label><input type="number" id="UPC" name="UPC" value="{{release.UPC}}" maxlength="15" />
+    <label for="title">Title: </label><input id="title" type="text" name="title" value="{{release.title}}"/><br />
+    <label for="releaseDate">Release Date: </label><input id="releaseDate" type="date" name="releaseDate" value="{{release.releaseDate}}"/><br />
+    <label for="type">Type: </label>
+        <select id="type" name="type">
+            <option value="album" {% if release.type == 'album' %}selected{% endif %}>Album</option>
+            <option value="single" {% if release.type == 'single' %}selected{% endif %}>Single</option>
+            <option value="EP" {% if release.type == 'EP' %}selected{% endif %}>EP</option>
+        </select><br />
+    <label for="numSongs"># of songs: </label><input id="numSongs" type="number" name="numSongs" min="1" value="{{release.numSongs}}"/><br />
+    <label for="songs">Songs in database:
+    <br/>
+    {% for song in release.songs %}
+    <div id='song_id[{{song.song_id}}]' name="{{song.title}}">{{song.title}}  
+        <button type="button" id="deletesong" onclick="removeButton({song_id: '{{song.song_id}}', song_title: '{{song.title}}'})">Remove</button>
+    </div>
+    {% endfor %}
+    </label>
+    <label for="addSongs">
+        Add songs:
+        <select id="song_id" name="song_id">
+            <option value="">--Please select a song--</option>
+            {% for song in otherSongs %}
+            <option value="{{song.song_id}}">{{song.title}}</option>
+            {% endfor %}
+        </select>
+        <!-- {% for song in otherSongs %}
+        <input type="checkbox" id="song_{{song.song_id}}" name="addedSongs" value="{{song.song_id}}">
+        <label for="song_{{song.song_id}}">{{song.title}}</label><br/>
+        {% endfor %} -->
+    </label>
+    <label for="songsToRemove">Songs to remove: </label>
+        <input id="songsToRemove" type="hidden" name="songsToRemove" value=""/>
+        <p id="songsToRemoveDisplay">
+        </p>
+        <button type="button" onclick="resetRemovalList('song')">Reset</button><br/>
+    <br/><button type="submit">Update release</button>
 </form>
 
 {% endif %}

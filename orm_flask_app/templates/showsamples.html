@@ -32,12 +32,12 @@
             {% endfor %}
         </td>
         <td id="button">
-            <a href="#">
+            <a href="updateform?sample_id={{sample.sample_id}}">
                 <button type="button">Update</button>
             </a>
         </td>
         <td id="button">
-            <a href="#" onclick="return confirm('Are you sure?')">
+            <a href="delete?sample_id={{sample.sample_id}}" onclick="return confirm('Are you sure?')">
                 <button type="button">Delete</button>
             </a>
         </td>

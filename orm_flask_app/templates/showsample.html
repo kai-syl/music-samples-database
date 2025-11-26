@@ -1,8 +1,8 @@
 {% include 'header.html' %}
 
 <div class="card">
-<p><a href="#"><button type="button">Update</button></a>
-<a href="#" onclick="return confirm('Are you sure?')">
+<p><a href="updateform?sample_id={{sample.sample_id}}"><button type="button">Update</button></a>
+<a href="delete?sample_id={{sample.sample_id}}" onclick="return confirm('Are you sure?')">
                 <button type="button">Delete</button>
 </a></p>
 <table>

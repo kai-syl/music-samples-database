@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 8.0.44, for Linux (x86_64)
+-- MySQL dump 10.13  Distrib 8.0.43, for Linux (x86_64)
 --
--- Host: localhost    Database: samples
+-- Host: 10.0.0.61    Database: samples
 -- ------------------------------------------------------
--- Server version	8.0.44-0ubuntu0.24.04.1
+-- Server version	8.0.43-0ubuntu0.24.04.2
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -28,7 +28,7 @@ CREATE TABLE `artist` (
   `nationality` text,
   `genre` text,
   PRIMARY KEY (`artist_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -37,7 +37,7 @@ CREATE TABLE `artist` (
 
 LOCK TABLES `artist` WRITE;
 /*!40000 ALTER TABLE `artist` DISABLE KEYS */;
-INSERT INTO `artist` VALUES (1,'revenxnt','American','breakcore'),(2,'Shygirl','British','club'),(3,'Cosha','Irish',NULL),(4,'Club Shy',NULL,NULL),(5,'SG Lewis','British','dance'),(6,'Ian Asher','American','dance'),(7,'Phantogram','American','electronic rock'),(8,'Kenny Barron Trio','American','jazz'),(9,'biko','American','dance'),(20,'test artist','for m2m CRUD','test genre'),(21,'test artist 2','m2m crud test 2','HELLO'),(22,'test artist 3','artist 3','3');
+INSERT INTO `artist` VALUES (1,'revenxnt','American','breakcore'),(2,'Shygirl','British','club'),(3,'Cosha','Irish',NULL),(4,'Club Shy',NULL,NULL),(5,'SG Lewis','British','dance'),(6,'Ian Asher','American','dance'),(7,'Phantogram','American','electronic rock'),(8,'Kenny Barron Trio','American','jazz'),(9,'Kuebiko Beats','American','dance');
 /*!40000 ALTER TABLE `artist` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -64,7 +64,7 @@ CREATE TABLE `artist_song` (
 
 LOCK TABLES `artist_song` WRITE;
 /*!40000 ALTER TABLE `artist_song` DISABLE KEYS */;
-INSERT INTO `artist_song` VALUES (2,1),(3,1),(4,1),(5,2),(1,3),(1,4),(6,5),(7,5),(8,6),(1,7),(9,7),(2,12),(5,12),(1,16),(9,16),(21,18);
+INSERT INTO `artist_song` VALUES (2,1),(3,1),(4,1),(5,2),(1,3),(1,4),(6,5),(7,5),(8,6),(1,7),(9,7);
 /*!40000 ALTER TABLE `artist_song` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -116,7 +116,7 @@ CREATE TABLE `release` (
 
 LOCK TABLES `release` WRITE;
 /*!40000 ALTER TABLE `release` DISABLE KEYS */;
-INSERT INTO `release` VALUES ('album','2025-09-05',10,'Anemoia','00602478202438'),('single','2025-07-11',2,'Sugar (feat. Shygirl)','00602478202544'),('single','2025-08-15',1,'Black Out Days (Stay Away)','00602478924026'),('single','2024-10-04',1,'eternal','055855825308'),('tType','2099-01-01',99,'tTitle','12345678910'),('single','2025-10-10',1,'Cyanica','199740065803'),('album','2009-08-19',10,'Minor Blues','4538182548462'),('EP','2024-02-09',6,'Club Shy','5056556135012');
+INSERT INTO `release` VALUES ('album','2025-09-05',10,'Anemoia','00602478202438'),('single','2025-08-15',1,'Black Out Days (Stay Away)','00602478924026'),('single','2024-10-04',1,'eternal','055855825308'),('album','2009-08-19',10,'Minor Blues','4538182548462'),('EP','2024-02-09',6,'Club Shy','5056556135012');
 /*!40000 ALTER TABLE `release` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -146,7 +146,7 @@ CREATE TABLE `release_song` (
 
 LOCK TABLES `release_song` WRITE;
 /*!40000 ALTER TABLE `release_song` DISABLE KEYS */;
-INSERT INTO `release_song` VALUES ('5056556135012','GBMVH2300650',1),('00602478202438','GBUM72503544',2),('00602478202544','GBUM72503544',2),('055855825308','CALVP2475952',3),('00602478924026','USUM72509197',5),('4538182548462','JPI291065403',6),('199740065803','QT3F32561928',7),('00602478202438','GBUM72503569',12);
+INSERT INTO `release_song` VALUES ('5056556135012','GBMVH2300650',1),('00602478202438','GBUM72503544',2),('055855825308','CALVP2475952',3),('00602478924026','USUM72509197',5),('4538182548462','JPI291065403',6);
 /*!40000 ALTER TABLE `release_song` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -212,7 +212,7 @@ CREATE TABLE `sample` (
   PRIMARY KEY (`sample_id`),
   KEY `sample_ibfk_1` (`source_id`),
   CONSTRAINT `sample_ibfk_1` FOREIGN KEY (`source_id`) REFERENCES `sampleSource` (`source_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -221,7 +221,7 @@ CREATE TABLE `sample` (
 
 LOCK TABLES `sample` WRITE;
 /*!40000 ALTER TABLE `sample` DISABLE KEYS */;
-INSERT INTO `sample` VALUES (1,'vocal','dance',1),(2,'synth','pop',2),(3,'drum loop','dance',3),(4,'piano','jazz',7),(6,'drum loop','breakcore',6);
+INSERT INTO `sample` VALUES (1,'vocal','dance',1),(2,'synth','pop',2),(3,'drum loop','dance',3),(4,'piano','jazz',7);
 /*!40000 ALTER TABLE `sample` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -339,7 +339,7 @@ CREATE TABLE `song` (
   `bpm` smallint DEFAULT NULL,
   PRIMARY KEY (`song_id`),
   UNIQUE KEY `ISRC` (`ISRC`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -348,7 +348,7 @@ CREATE TABLE `song` (
 
 LOCK TABLES `song` WRITE;
 /*!40000 ALTER TABLE `song` DISABLE KEYS */;
-INSERT INTO `song` VALUES (1,'dance','thicc','CM','GBMVH2300650',130),(2,'pop','Sugar','DbM','GBUM72503544',130),(3,'breakcore','eternal','GM','CALVP2475952',160),(4,'breakcore','10o3//dusk',NULL,'CALVP2413177',170),(5,'dance','Black Out Days (Stay Away)','Gbm','USUM72509197',155),(6,'jazz','Emily','CM','JPI291065403',115),(7,'dance','Cyanica','Am','QT3F32561928',123),(12,'pop','Baby Blue','C#M','GBUM72503569',125),(16,'Techno','Fortune Lies','Am','',130),(18,'test genre','test song for m2m CRUD','CM','123456789',100);
+INSERT INTO `song` VALUES (1,'dance','thicc','CM','GBMVH2300650',130),(2,'pop','Sugar','DbM','GBUM72503544',130),(3,'breakcore','eternal','GM','CALVP2475952',160),(4,'breakcore','10o3//dusk',NULL,'CALVP2413177',170),(5,'dance','Black Out Days (Stay Away)','Gbm','USUM72509197',155),(6,'jazz','Emily','CM','JPI291065403',115),(7,'dance','Cyanica','Am',NULL,123);
 /*!40000 ALTER TABLE `song` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -361,4 +361,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-24  0:33:03
+-- Dump completed on 2025-10-05  1:10:15

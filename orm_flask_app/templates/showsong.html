@@ -12,6 +12,7 @@
     <th>song_id</th>
     <th>Title</th>
     <th>Artist(s)</th>
+    <th>Release(s)</th>
     <th>Genre</th>
     <th>Key</th>
     <th>BPM</th>
@@ -29,6 +30,11 @@
             <a href="read?t=artist&a={{artist.artist_id}}">{{artist.name}}</a><br/>
             {% endfor %}
 
+        </td>
+        <td>
+            {% for release in song.releases %}
+            <a href="release?upc={{release.UPC}}">{{release.title}}</a><br/>
+            {% endfor %}
         </td>
         <td>
             {{song.genre}}

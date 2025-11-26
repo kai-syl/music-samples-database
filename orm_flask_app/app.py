@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Flask, render_template, redirect, request
 from flask_sqlalchemy import SQLAlchemy
 import os
@@ -92,7 +93,7 @@ def updateSong():
     # If artistsToRemove not blank, remove from artist_song
     if request.args.get('artistsToRemove'):
         removeList = request.args.get('artistsToRemove').split(',')
-        print(removeList)
+        #print(removeList)
         for id in removeList:
             if id == '' or id is None:
                 continue
@@ -128,22 +129,19 @@ def read():
         output = redirect("/")
     return output
 
+# Samples and Repos
+
 @app.route('/samples')
 def showSamples():
     sample_id = request.args.get('sample_id')
     if sample_id:
         sample = Sample.query.get(sample_id)
         source_id = sample.source_id
-        if SampleSong.query.filter_by(source_id=source_id).first() is not None:
-            sampleType = "song"
-            sampleSong = SampleSong.query.filter_by(source_id=source_id).first()
-        else:
-            sampleType = "repo"
-        
-        if sampleType == "song":
-            song = Song.query.filter_by(song_id=sampleSong.song_id).first()
+        # check if sampleSource is a song or repo
+        if Song.query.filter_by(source_id=source_id).first() is not None:
+            song = Song.query.filter_by(source_id=source_id).first()
             return render_template("showsample.html", sample=sample, song=song)
-        elif sampleType == "repo":
+        else:
             repo = Repo.query.filter_by(source_id=source_id).first()
             return render_template("showsample.html", sample=sample, repo=repo)
 
@@ -152,13 +150,10 @@ def showSamples():
         sources = {}
         for sample in samples:
             source_id = sample.source_id
-            if SampleSong.query.filter_by(source_id=source_id).first() is not None:
-                sampleType = "song"
-                sampleSong = SampleSong.query.filter_by(source_id=source_id).first()
-                song = Song.query.filter_by(song_id=sampleSong.song_id).first()
+            if Song.query.filter_by(source_id=source_id).first() is not None:
+                song = Song.query.filter_by(source_id=source_id).first()
                 sources[source_id] = {"link": "read?t=song&song_id=" + str(song.song_id), "name": song.title}
             else:
-                sampleType = "repo"
                 repo = Repo.query.filter_by(source_id=source_id).first()
                 sources[source_id] = {"link": "repo?id=" + str(repo.source_id), "name": repo.name}
         return render_template("showsamples.html", samples=samples, sources=sources)
@@ -172,6 +167,120 @@ def showRepos():
     else:
         repos = Repo.query.all()
         return render_template("showrepos.html", repos=repos)
+
+@app.route('/insertsample')
+def insertSampleForm():
+    sources = []
+    for s in Song.query.all():
+        sources.append(s)
+    for r in Repo.query.all():
+        sources.append(r)
+    
+    # Get songs by artist 1 (me) for "used on" selection
+    on_songs = Artist.query.get(1).songs
+    return render_template("insertform.html", t="sample", sources=sources, on_songs=on_songs)
+
+@app.route('/updatesample')
+def updateSample():
+    sample_id = request.args.get('sample_id')
+    sample = Sample.query.get(sample_id)
+    sample.instrument = request.args.get('instrument')
+    sample.genre = request.args.get('genre')
+    sample.source_id = request.args.get('source_id')
+    song_id = request.args.get('song_id')
+
+    if song_id:
+        songToInsert = Song.query.get(song_id)
+        sample.on_songs.append(songToInsert)
+
+    # If songsToRemove not blank, remove from sample_on_song
+    if request.args.get('songsToRemove'):
+        removeList = request.args.get('songsToRemove').split(',')
+        for id in removeList:
+            if id == '' or id is None:
+                continue
+            song = Song.query.get(id)
+            sample.on_songs.remove(song)
+
+    db.session.commit()
+    return redirect(f'samples?sample_id={sample_id}')
+
+@app.route('/newsample')
+def insertSample():
+    sample = Sample(
+        instrument=request.args.get('instrument'),
+        genre=request.args.get('genre'),
+        source_id=request.args.get('source_id')
+    )
+    song_id = request.args.get('song_id')
+    if song_id:
+        songToInsert = Song.query.get(song_id)
+        sample.on_songs.append(songToInsert)
+    db.session.add(sample)
+    db.session.commit()
+    return redirect(f'samples?sample_id={sample.sample_id}')
+
+# Releases
+
+@app.route('/release')
+def showRelease():
+    UPC = request.args.get('UPC')
+    if UPC:
+        release = Release.query.get(UPC)
+        otherReleases = [r for r in Release.query.all() if r.UPC != release.UPC]
+        return render_template("showrelease.html", release=release, otherReleases=otherReleases)
+    else:
+        otherReleases = Release.query.all()
+        return render_template("showrelease.html", otherReleases=otherReleases)
+
+@app.route('/updaterelease')
+def updateRelease():
+    UPC = request.args.get('UPC')
+    if UPC:
+        # This method allows for partial updates, but also still requires UPC (the primary key)
+        attrs = request.args
+        release = Release.query.get(UPC)
+        if request.args.get('songsToRemove'):
+            removeList = request.args.get('songsToRemove').split(',')
+            for id in removeList:
+                if id == '' or id is None:
+                    continue
+                song = Song.query.get(id)
+                release.songs.remove(song)
+        for i in request.args:
+            if i == 'songsToRemove':
+                continue
+            elif i == 'song_id':
+                song = Song.query.get(request.args.get('song_id'))
+                if song:
+                    release.songs.append(song)
+
+            else:
+                release.__setattr__(i, attrs[i])
+        db.session.commit()
+        return redirect(f'release?UPC={UPC}')
+    else:
+        return redirect('/release')
+
+@app.route('/insertrelease')
+def insertReleaseForm():
+    return render_template("insertform.html", t="release")
+
+@app.route('/newrelease')
+def insertRelease():
+    if request.args.get('UPC') is not None:
+        release = Release(
+            UPC=request.args.get('UPC'),
+            title=request.args.get('title'),
+            type=request.args.get('type'),
+            numSongs=request.args.get('numSongs'),
+            releaseDate=request.args.get('releaseDate')
+        )
+        db.session.add(release)
+        db.session.commit()
+        return redirect(f"release?UPC={release.UPC}")
+    else:
+        return redirect("insertrelease")
 
 @app.route('/updateform')
 def updateForm():
@@ -189,21 +298,81 @@ def updateForm():
             return redirect('read?t=song')
         else:
             return render_template("updateform.html", song=song, otherArtists=otherArtists)
+    elif request.args.get('sample_id') is not None:
+        # Need to add "used on" selection removal
+        sample = Sample.query.get(request.args.get('sample_id'))
+        if sample is None:
+            return redirect('samples')
+        else:
+            song = Song.query.filter_by(source_id=sample.source_id).first()
+            repo = Repo.query.filter_by(source_id=sample.source_id).first()
+            otherSources = []
+            on_songs_ids = [s.song_id for s in sample.on_songs]
+            allSongs = Song.query.filter(Song.song_id.not_in(on_songs_ids))
+            # can probably make this prettier
+            otherSongs = []
+            for s in allSongs:
+                for a in s.artists:
+                    if a.artist_id == 1:
+                        otherSongs.append(s)
+            if song is not None:
+                source = song.title
+                for s in Song.query.all():
+                    if s.source_id != song.source_id:
+                        otherSources.append(s)
+                for r in Repo.query.all():
+                    otherSources.append(r)
+            elif repo is not None:
+                source = repo.name
+                for s in Song.query.all():
+                    otherSources.append(s)
+                for r in Repo.query.all():
+                    if r.source_id != repo.source_id:
+                        otherSources.append(r)
+            
+            return render_template("updateform.html", 
+                                   sample=sample, 
+                                   source=source, 
+                                   otherSources=otherSources,
+                                   otherSongs=otherSongs)
+    elif request.args.get('UPC') is not None:
+        release = Release.query.get(request.args.get('UPC'))
+        if release is None:
+            return redirect('/')
+        else:
+            otherSongs = Song.query.filter(Song.song_id.not_in([s.song_id for s in release.songs]))
+            return render_template("updateform.html", release=release, otherSongs=otherSongs)
     else:
         return redirect("/")
 
 @app.route('/delete')
 def delete():
-    if request.args.get('song_id') is not None and request.args.get('artist_id') is None:
+    # Blocks multiple item deletion (would rather dbms cascading deletes handle that)
+    if len(request.args) > 1:
+        return redirect("/")
+
+    if request.args.get('song_id'):
         song = Song.query.get(request.args.get('song_id'))
         db.session.delete(song)
         db.session.commit()
         return redirect('read?t=song')
-    elif request.args.get('artist_id') is not None and request.args.get('song_id') is None:
+    elif request.args.get('artist_id'):
         artist = Artist.query.get(request.args.get('artist_id'))
         db.session.delete(artist)
         db.session.commit()
         return redirect('read?t=artist')
+    elif request.args.get('sample_id'):
+        sample = Sample.query.get(request.args.get('sample_id'))
+        db.session.delete(sample)
+        db.session.commit()
+        return redirect('samples')
+    elif request.args.get('UPC'):
+        release = Release.query.get(request.args.get('UPC'))
+        db.session.delete(release)
+        db.session.commit()
+        return redirect('release')
+    else:
+        return redirect('/')
 
 if __name__ == '__main__':
     app.run(port=8080, debug=True, host="0.0.0.0")
