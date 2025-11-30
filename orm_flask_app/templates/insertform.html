@@ -65,6 +65,29 @@
     <button type="submit">Insert new release</button>
 </form>
 
+{% elif t == "repo" %}
+<form action="newrepo">
+    <label for="name">Pack/Repo name: </label><input id="name" type="text" name="name" required/><br />
+    <label for="type">Type: </label>
+    <select name="type">
+        <option value="">--Please select a type--</option>
+        <option value="pack">Pack</option>
+        <option value="repository">Repository</option>
+        <option value="other">Other</option>
+    </select><br />
+    <label for="custodian">Custodian: </label><input id="custodian" type="text" name="custodian" required/><br />
+    <label for="price">Price: </label>$<input id="price" type="number" name="price" step="0.01" min="0" value="0" required/><br/>
+    <label for="billed">Billed: </label>
+        <select id="billed" name="billed" required>
+            <option value="">--Please select an option--</option>
+            <option value="n/a">N/A</option>
+            <option value="once">Once</option>
+            <option value="monthly">Monthly</option>
+            <option value="yearly">Yearly</option>
+        </select><br />
+    <button type="submit">Insert new Pack/Repo</button>
+</form>
+
 {% endif %}
 </div>
 {% include 'footer.html' %}

@@ -1,26 +1,21 @@
 {% include 'header.html' %}
 
 <div class="card">
-<p><a href="#"><button type="button">Update</button></a>
-<a href="#" onclick="return confirm('Are you sure?')">
-                <button type="button">Delete</button>
-</a></p>
+<p><a href="/insertrepo"><button type="button">New Pack/Repo</button></a></p>
 <table>
     <tr>
-    <th>source_id</th>
     <th>Name</th>
     <th>Type</th>
     <th>Custodian</th>
     <th>Price</th>
     <th>Billed</th>
+    <th>Update</th>
+    <th>Delete</th>
     </tr>
     {% for repo in repos %}
     <tr>
         <td>
-            {{repo.source_id}}
-        </td>
-        <td>
-            {{repo.name}}
+            <a href="/repo?id={{repo.source_id}}">{{repo.name}}</a>
         </td>
         <td>
             {{repo.type}}
@@ -33,6 +28,14 @@
         </td>
         <td>
             {{repo.billed}}
+        </td>
+        <td>
+            <a href='update?source_id={{repo.source_id}}'><button type="button">Update</button></a>
+        </td>
+        <td>
+            <a href="delete?source_id={{repo.source_id}}" onclick="return confirm('Delete {{repo.name}}?')">
+                <button type="button">Delete</button>
+            </a>
         </td>
     </tr>
     {% endfor %}

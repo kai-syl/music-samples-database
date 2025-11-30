@@ -2,8 +2,8 @@
 
 <div class="card">
 
-<p><a href='updateform?song_id={{song.song_id}}'><button type="button">Update</button></a>
-<a href="delete?song_id={{song.song_id}}" onclick="return confirm('Are you sure?')">
+<p><a href='update?song_id={{song.song_id}}'><button type="button">Update</button></a>
+<a href="delete?song_id={{song.song_id}}" onclick="return confirm('Delete {{song.title}}?')">
                 <button type="button">Delete</button>
 </a></p>
 
@@ -27,7 +27,7 @@
         </td>
         <td>
             {% for artist in song.artists %}
-            <a href="read?t=artist&a={{artist.artist_id}}">{{artist.name}}</a><br/>
+            <a href="artists?artist_id={{artist.artist_id}}">{{artist.name}}</a><br/>
             {% endfor %}
 
         </td>

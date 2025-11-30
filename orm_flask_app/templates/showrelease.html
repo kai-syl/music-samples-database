@@ -2,7 +2,7 @@
 
 <div class="card">
 
-
+<p class="card"><a href="/insertrelease"><button type="button">New release</button></a></p>
 <form action="/release" method="get">
     <label for="UPC">Select a release:</label>
     <select name="UPC" id="UPC" onchange="this.form.submit()">
@@ -15,11 +15,10 @@
         {% endfor %}
     </select>
 </form><br/>
-<p class="card"><a href="/insertrelease"><button type="button">New release</button></a></p>
 
 {% if release is defined %}
 
-<p class="card"><a href='updateform?UPC={{release.UPC}}'><button type="button">Update</button></a>
+<p class="card"><a href='update?UPC={{release.UPC}}'><button type="button">Update</button></a>
 <a href="delete?UPC={{release.UPC}}" onclick="return confirm('Are you sure?')">
                 <button type="button">Delete</button>
 </a></p>
@@ -51,7 +50,7 @@
         </td>
         <td>
             {% for song in release.songs %}
-            <a href="read?t=song&song_id={{song.song_id}}">{{song.title}}</a><br/>
+            <a href="songs?song_id={{song.song_id}}">{{song.title}}</a><br/>
             {% endfor %}
         </td>
     </tr>

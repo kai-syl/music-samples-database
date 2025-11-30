@@ -129,6 +129,30 @@
     <br/><button type="submit">Update release</button>
 </form>
 
+{% elif request.args.source_id is defined %}
+
+<form action="updaterepo">
+    <input type="hidden" name="source_id" value="{{repo.source_id}}" />
+    <label for="name">Name: </label><input id="name" type="text" name="name" value="{{repo.name}}"/><br />
+    <label for="type">Type: </label>
+        <select name="type">
+            <option value="pack" {% if repo.type == 'pack' %}selected{% endif %}>Pack</option>
+            <option value="repository" {% if repo.type == 'repository' %}selected{% endif %}>Repository</option>
+            <option value="other" {% if repo.type == 'other' %}selected{% endif %}>Other</option>
+        </select><br />
+    <label for="custodian">Custodian: </label><input id="custodian" type="text" name="custodian" value="{{repo.custodian}}"/><br />
+    <label for="price">Price: </label><input id="price" step="0.01" type="number" name="price" value="{{repo.price}}" min="0.00"/><br />
+    <label for="billed">Billed: </label>
+        <select id="billed" name="billed" required>
+            <option value="n/a" {% if repo.billed == 'n/a' %}selected{% endif %}>N/A</option>
+            <option value="once" {% if repo.billed == 'once' %}selected{% endif %}>Once</option>
+            <option value="monthly" {% if repo.billed == 'monthly' %}selected{% endif %}>Monthly</option>
+            <option value="yearly" {% if repo.billed == 'yearly' %}selected{% endif %}>Yearly</option>
+        </select><br />
+    <button type="submit">Update Pack/Repo</button>
+</form>
+
+
 {% endif %}
 </div>
 {% include 'footer.html' %}

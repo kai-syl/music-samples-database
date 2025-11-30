@@ -6,6 +6,7 @@
 
 <table>
     <tr>
+    <th id="button">View</th>
     <th>Title</th>
     <th>Artist(s)</th>
     <th>Genre</th>
@@ -17,12 +18,15 @@
     </tr>
     {% for song in songs %}
     <tr>
+        <td id="button">
+            <a href="songs?song_id={{song.song_id}}"><button type="button">View</button></a>
+        </td>
         <td>
-            <a href="read?t=song&song_id={{song.song_id}}">{{song.title}}</a>
+            {{song.title}}
         </td>
         <td>
             {% for artist in song.artists %}
-            <a href="read?t=artist&a={{artist.artist_id}}">{{artist.name}}</a><br/>
+            <a href="artists?artist_id={{artist.artist_id}}">{{artist.name}}</a><br/>
             {% endfor %}
         </td>
         <td>
@@ -38,12 +42,12 @@
             {{song.ISRC}}
         </td>        
         <td id="button">
-            <a href="updateform?song_id={{song.song_id}}">
+            <a href="update?song_id={{song.song_id}}">
                 <button type="button">Update</button>
             </a>
         </td>
         <td id="button">
-            <a href="delete?song_id={{song.song_id}}" onclick="return confirm('Are you sure?')">
+            <a href="delete?song_id={{song.song_id}}" onclick="return confirm('Delete {{song.title}}?')">
                 <button type="button">Delete</button>
             </a>
         </td>

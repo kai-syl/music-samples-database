@@ -1,7 +1,7 @@
-from datetime import datetime
 from flask import Flask, render_template, redirect, request
-from flask_sqlalchemy import SQLAlchemy
 import os
+
+from sqlalchemy import text
 from extensions import db
 from models import *
 
@@ -28,6 +28,15 @@ def index():
     return render_template("home.html")
 
 ### Artists
+@app.route('/artists')
+def showArtists():
+    if request.args.get('artist_id'):
+        artist = Artist.query.get(request.args.get('artist_id'))
+        return render_template("showartist.html", artist=artist)
+    else:
+        artists = Artist.query.all()
+        return render_template("showartists.html", artists=artists)
+
 @app.route('/insertartist')
 def insertArtistForm():
     return render_template("insertform.html", t="artist")
@@ -42,7 +51,7 @@ def insertArtist():
         )
         db.session.add(artist)
         db.session.commit()
-        return redirect("read?t=artist")
+        return redirect("artists")
     else:
         return redirect("insertartist")
     
@@ -53,9 +62,18 @@ def updateArtist():
     artist.nationality = request.args.get('nationality')
     artist.genre = request.args.get('genre')
     db.session.commit()
-    return redirect('read?t=artist')
+    return redirect('artists')
 
 ### Songs
+@app.route('/songs')
+def showSongs():
+    if request.args.get('song_id'):
+        song = Song.query.get(request.args.get('song_id'))
+        return render_template("showsong.html", song=song)
+    else:
+        songs = Song.query.all()
+        return render_template("showsongs.html", songs=songs)
+    
 @app.route('/insertsong')
 def insertSongForm():
     return render_template("insertform.html", t="song")
@@ -72,7 +90,7 @@ def insertSong():
         )
         db.session.add(song)
         db.session.commit()
-        return redirect("read?t=song")
+        return redirect("songs")
     
 @app.route('/updatesong')
 def updateSong():
@@ -102,32 +120,7 @@ def updateSong():
             updateArtist_Song('drop', artist, song)
 
     db.session.commit()
-    return redirect(f'read?t=song&song_id={song_id}')
-
-### Multi-use pages depending on GET variables
-# Going to move away from this design later
-@app.route('/read')
-def read():
-    table = request.args.get('t')
-    song_id = request.args.get('song_id')
-    artist_id = request.args.get('a')
-    if table == 'song':
-        if song_id is not None:
-            song = Song.query.get(song_id)
-            output = render_template("showsong.html", song=song)
-        else:
-            songs = Song.query.all()
-            output = render_template("showsongs.html", songs=songs)
-    elif table == 'artist':
-        if artist_id is not None:
-            artist = Artist.query.get(artist_id)
-            output = render_template("showartist.html", artist=artist)
-        else:
-            artists = Artist.query.all()
-            output = render_template("showartists.html", artists=artists)
-    else:
-        output = redirect("/")
-    return output
+    return redirect(f'songs?song_id={song_id}')
 
 # Samples and Repos
 
@@ -152,7 +145,7 @@ def showSamples():
             source_id = sample.source_id
             if Song.query.filter_by(source_id=source_id).first() is not None:
                 song = Song.query.filter_by(source_id=source_id).first()
-                sources[source_id] = {"link": "read?t=song&song_id=" + str(song.song_id), "name": song.title}
+                sources[source_id] = {"link": "songs?song_id=" + str(song.song_id), "name": song.title}
             else:
                 repo = Repo.query.filter_by(source_id=source_id).first()
                 sources[source_id] = {"link": "repo?id=" + str(repo.source_id), "name": repo.name}
@@ -167,6 +160,39 @@ def showRepos():
     else:
         repos = Repo.query.all()
         return render_template("showrepos.html", repos=repos)
+
+@app.route('/insertrepo')
+def insertRepoForm():
+    return render_template("insertform.html", t="repo")
+
+@app.route('/newrepo')
+def insertRepo():
+    if request.args.get('name') is not None:
+        repo = {
+            'name': request.args.get('name'),
+            'type': request.args.get('type'),
+            'custodian': request.args.get('custodian'),
+            'price': request.args.get('price'),
+            'billed': request.args.get('billed')
+        }
+        query = "INSERT INTO repo (name, type, custodian, price, billed) values (:name, :type, :custodian, :price, :billed)"
+        db.session.execute(text(query),repo)
+        db.session.commit()
+        return redirect(f"repo")
+    else:
+        return redirect("insertrepo")
+
+@app.route('/updaterepo')
+def updateRepo():
+    source_id = request.args.get('source_id')
+    repo = Repo.query.get(source_id)
+    repo.name = request.args.get('name')
+    repo.type = request.args.get('type')
+    repo.custodian = request.args.get('custodian')
+    repo.price = request.args.get('price')
+    repo.billed = request.args.get('billed')
+    db.session.commit()
+    return redirect(f'repo?id={source_id}')
 
 @app.route('/insertsample')
 def insertSampleForm():
@@ -282,12 +308,12 @@ def insertRelease():
     else:
         return redirect("insertrelease")
 
-@app.route('/updateform')
+@app.route('/update')
 def updateForm():
     if request.args.get('artist_id') is not None:
         artist = Artist.query.get(request.args.get('artist_id'))
         if artist is None:
-            return redirect('read?t=artist')
+            return redirect('artists')
         else:
             return render_template("updateform.html", artist=artist)
     elif request.args.get('song_id') is not None:
@@ -295,7 +321,7 @@ def updateForm():
         songArtists = [x.artist_id for x in song.artists]
         otherArtists = Artist.query.filter(Artist.artist_id.not_in(songArtists))
         if song is None:
-            return redirect('read?t=song')
+            return redirect('songs')
         else:
             return render_template("updateform.html", song=song, otherArtists=otherArtists)
     elif request.args.get('sample_id') is not None:
@@ -342,6 +368,12 @@ def updateForm():
         else:
             otherSongs = Song.query.filter(Song.song_id.not_in([s.song_id for s in release.songs]))
             return render_template("updateform.html", release=release, otherSongs=otherSongs)
+    elif request.args.get('source_id') is not None:
+        repo = Repo.query.get(request.args.get('source_id'))
+        if repo is None:
+            return redirect('repo')
+        else:
+            return render_template("updateform.html", repo=repo)
     else:
         return redirect("/")
 
@@ -355,12 +387,12 @@ def delete():
         song = Song.query.get(request.args.get('song_id'))
         db.session.delete(song)
         db.session.commit()
-        return redirect('read?t=song')
+        return redirect('songs')
     elif request.args.get('artist_id'):
         artist = Artist.query.get(request.args.get('artist_id'))
         db.session.delete(artist)
         db.session.commit()
-        return redirect('read?t=artist')
+        return redirect('artists')
     elif request.args.get('sample_id'):
         sample = Sample.query.get(request.args.get('sample_id'))
         db.session.delete(sample)
@@ -371,6 +403,11 @@ def delete():
         db.session.delete(release)
         db.session.commit()
         return redirect('release')
+    elif request.args.get('source_id'):
+        repo = Repo.query.get(request.args.get('source_id'))
+        db.session.delete(repo)
+        db.session.commit()
+        return redirect('repo')
     else:
         return redirect('/')
 

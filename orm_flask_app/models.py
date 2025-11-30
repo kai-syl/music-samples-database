@@ -51,7 +51,7 @@ class Sample(db.Model):
 
 class Repo(db.Model):
     __tablename__ = 'repo'
-    source_id = db.Column(db.Integer, db.ForeignKey('sampleSource.source_id'), primary_key=True)
+    source_id = db.Column(db.Integer, db.ForeignKey('sampleSource.source_id'), primary_key=True, nullable=False)
     custodian = db.Column(db.String)
     type = db.Column(db.String)
     price = db.Column(db.Float)

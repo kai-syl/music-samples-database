@@ -1,8 +1,8 @@
 {% include 'header.html' %}
 
 <div class="card">
-<p><a href="updateform?sample_id={{sample.sample_id}}"><button type="button">Update</button></a>
-<a href="delete?sample_id={{sample.sample_id}}" onclick="return confirm('Are you sure?')">
+<p><a href="update?sample_id={{sample.sample_id}}"><button type="button">Update</button></a>
+<a href="delete?sample_id={{sample.sample_id}}" onclick="return confirm('Delete sample {{sample.sample_id}}?')">
                 <button type="button">Delete</button>
 </a></p>
 <table>
@@ -26,12 +26,12 @@
         </td>   
         <td>
             {% for song in sample.on_songs %}
-            <a href="read?t=song&song_id={{song.song_id}}">{{song.title}}</a><br/>
+            <a href="songs?song_id={{song.song_id}}">{{song.title}}</a><br/>
             {% endfor %}
         </td>
         <td>
             {% if song is defined %}
-                <a href="read?t=song&song_id={{song.song_id}}">{{song.title}}</a>
+                <a href="songs?song_id={{song.song_id}}">{{song.title}}</a>
             {% endif %}
             {% if repo is defined %}
                 <a href="repo?id={{repo.source_id}}">{{repo.name}}</a>

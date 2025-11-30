@@ -5,6 +5,7 @@
 
 <table>
     <tr>
+    <th id="button">View</th>
     <th>Name</th>
     <th>Nationality</th>
     <th>Genre</th>
@@ -13,8 +14,11 @@
     </tr>
     {% for artist in artists %}
     <tr>
+        <td id="button">
+            <a href="artists?artist_id={{artist.artist_id}}"><button type="button">View</button></a>
+        </td>
         <td>
-            <a href="read?t=artist&a={{artist.artist_id}}">{{artist.name}}</a>
+            {{artist.name}}
         </td>
         <td>
             {{artist.nationality}}
@@ -23,12 +27,12 @@
             {{artist.genre}}
         </td>     
         <td id="button">
-            <a href="updateform?artist_id={{artist.artist_id}}">
+            <a href="update?artist_id={{artist.artist_id}}">
                 <button type="button">Update</button>
             </a>
         </td>
         <td id="button">
-            <a href="delete?artist_id={{artist.artist_id}}" onclick="return confirm('Are you sure?')">
+            <a href="delete?artist_id={{artist.artist_id}}" onclick="return confirm('Delete {{artist.name}}?')">
                 <button type="button">Delete</button>
             </a>
         </td>
