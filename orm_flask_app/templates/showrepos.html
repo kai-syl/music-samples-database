@@ -1,19 +1,27 @@
 {% include 'header.html' %}
 
 <div class="card">
+    {% if session['admin'] == true %}
 <p><a href="/insertrepo"><button type="button">New Pack/Repo</button></a></p>
+    {% endif %}
 <table>
     <tr>
+    <th id="button">View</th>
     <th>Name</th>
     <th>Type</th>
     <th>Custodian</th>
     <th>Price</th>
     <th>Billed</th>
-    <th>Update</th>
-    <th>Delete</th>
+    {% if session['admin'] == true %}
+    <th id="button">Update</th>
+    <th id="button">Delete</th>
+    {% endif %}
     </tr>
     {% for repo in repos %}
     <tr>
+        <td id="button">
+            <a href="/repo?id={{repo.source_id}}"><button type="button">View</button></a>
+        </td>
         <td>
             <a href="/repo?id={{repo.source_id}}">{{repo.name}}</a>
         </td>
@@ -29,6 +37,7 @@
         <td>
             {{repo.billed}}
         </td>
+        {% if session['admin'] == true %}
         <td>
             <a href='update?source_id={{repo.source_id}}'><button type="button">Update</button></a>
         </td>
@@ -37,6 +46,7 @@
                 <button type="button">Delete</button>
             </a>
         </td>
+        {% endif %}
     </tr>
     {% endfor %}
 </table>

@@ -17,6 +17,12 @@
                 <a href="/samples">Samples</a>
                 <a href="/release">Releases</a>
                 <a href="/repo">Packs/Repos</a>
+                {% if session.get('user') %}
+                    <a href="/logout" style="text-align: right;">Logout</a>
+                    <a href="/userinfo" style="text-align: right;">User Info</a>
+                {% else %}
+                    <a href="/login">Login</a>
+                {% endif %}
             </nav>
         </h3>
         <hr>

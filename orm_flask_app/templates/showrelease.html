@@ -1,14 +1,16 @@
 {% include 'header.html' %}
 
 <div class="card">
-
+{% if session['admin'] == true %}
 <p class="card"><a href="/insertrelease"><button type="button">New release</button></a></p>
+{% endif %}
 <form action="/release" method="get">
     <label for="UPC">Select a release:</label>
     <select name="UPC" id="UPC" onchange="this.form.submit()">
-        <option value="">--Please select a release--</option>
         {% if release is defined %}
-        <option value="{{release.UPC}}">{{release.title}}</option>
+        <option value="{{release.UPC}}" selected>{{release.title}}</option>
+        {% else %}
+        <option value="">--Please select a release--</option>
         {% endif %}
         {% for release in otherReleases %}
         <option value="{{release.UPC}}">{{release.title}}</option>
@@ -17,13 +19,39 @@
 </form><br/>
 
 {% if release is defined %}
-
+    {% if session['admin'] == true %}
 <p class="card"><a href='update?UPC={{release.UPC}}'><button type="button">Update</button></a>
 <a href="delete?UPC={{release.UPC}}" onclick="return confirm('Are you sure?')">
                 <button type="button">Delete</button>
 </a></p>
-
-<table>
+    {% endif %}
+<div class="coverimg">
+{% if cover_url %}
+<img src="{{cover_url}}" alt="Album cover"/>
+{% endif %}
+</div>
+<div class="info">
+<h2 class="title">{{release.title}}</h2>
+<dl>
+    <dt>Type:</dt>
+    <dt>Release date:</dt>
+    <dt>Number of songs:</dt>
+    <dt>UPC:</dt>
+    <dt>Songs in database:</dt>
+</dl>
+<dl>
+    <dd>{{release.type}}</dd>
+    <dd>{{release.releaseDate}}</dd>
+    <dd>{{release.numSongs}}</dd>
+    <dd>{{release.UPC}}</dd>
+    <dd>
+        {% for song in release.songs %}
+        <a href="songs?song_id={{song.song_id}}">{{song.title}}</a><br/>
+        {% endfor %}
+    </dd>
+</dl>
+</div>
+<!-- <table>
     <tr>
     <th>Title</th>
     <th>Release date</th>
@@ -54,7 +82,7 @@
             {% endfor %}
         </td>
     </tr>
-</table>
+</table> -->
 </div>
 
 {% endif %}

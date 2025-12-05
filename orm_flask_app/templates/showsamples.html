@@ -1,8 +1,9 @@
 {% include 'header.html' %}
 
 <div class="card">
+    {% if session['admin'] == true %}
 <p><a href='insertsample'><button type="button">Insert sample</button></a></p>
-
+    {% endif %}
 <table>
     <tr>
     <th id="button">View</th>
@@ -10,8 +11,10 @@
     <th>Genre</th>
     <th>Source</th>
     <!--th> Used on </th-->
+    {% if session['admin'] == true %}
     <th id="button">Update</th>
     <th id="button">Delete</th>
+    {% endif %}
     </tr>
     {% for sample in samples %}
     <tr>
@@ -31,6 +34,7 @@
                 {% endif %}
             {% endfor %}
         </td>
+        {% if session['admin'] == true %}
         <td id="button">
             <a href="update?sample_id={{sample.sample_id}}">
                 <button type="button">Update</button>
@@ -41,6 +45,7 @@
                 <button type="button">Delete</button>
             </a>
         </td>
+        {% endif %} 
     </tr>
     {% endfor %}
 </table>

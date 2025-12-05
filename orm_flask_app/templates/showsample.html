@@ -1,10 +1,12 @@
 {% include 'header.html' %}
 
 <div class="card">
+{% if session['admin'] == true %}
 <p><a href="update?sample_id={{sample.sample_id}}"><button type="button">Update</button></a>
 <a href="delete?sample_id={{sample.sample_id}}" onclick="return confirm('Delete sample {{sample.sample_id}}?')">
                 <button type="button">Delete</button>
 </a></p>
+{% endif %}
 <table>
     <tr>
     <th>sample_id</th>

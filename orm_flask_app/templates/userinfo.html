@@ -1,0 +1,14 @@
+{% include 'header.html' %}
+<div class="card">
+    {% if success == true %}
+    <h2>Login Successful</h2>
+    <p>Welcome, {{ session.user.preferred_username }}!</p>
+    {% else %}
+    <h2>User Information</h2>
+    <p>Username: {{ session.user.preferred_username }}</p>
+    {% endif %}
+    <p>Email: {{ session.user.email }}</p>
+    <p>Admin: {% if session.admin %}Yes{% else %}No{% endif %}</p>
+    <p><a href="/logout"><button type="button">Logout</button></a></p>
+</div>
+{% include 'footer.html' %}

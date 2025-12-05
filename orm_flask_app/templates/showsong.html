@@ -2,11 +2,12 @@
 
 <div class="card">
 
+    {% if session['admin'] == true %}
 <p><a href='update?song_id={{song.song_id}}'><button type="button">Update</button></a>
 <a href="delete?song_id={{song.song_id}}" onclick="return confirm('Delete {{song.title}}?')">
                 <button type="button">Delete</button>
 </a></p>
-
+    {% endif %}
 <table>
     <tr>
     <th>song_id</th>
@@ -33,7 +34,7 @@
         </td>
         <td>
             {% for release in song.releases %}
-            <a href="release?upc={{release.UPC}}">{{release.title}}</a><br/>
+            <a href="release?UPC={{release.UPC}}">{{release.title}}</a><br/>
             {% endfor %}
         </td>
         <td>

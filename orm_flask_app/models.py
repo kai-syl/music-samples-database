@@ -65,6 +65,7 @@ class Release(db.Model):
     releaseDate = db.Column(db.DateTime)
     numSongs = db.Column(db.Integer)
     title = db.Column(db.String)
+    url = db.Column(db.String)
     songs = db.relationship('Song', secondary=release_song, backref='releases', lazy='dynamic')
 
 

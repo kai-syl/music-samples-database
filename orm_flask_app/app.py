@@ -1,31 +1,109 @@
-from flask import Flask, render_template, redirect, request
-import os
+from flask import Flask, render_template, redirect, request, session, url_for
+import os, json, spotApi
 
 from sqlalchemy import text
 from extensions import db
 from models import *
+import spotApi
+
+from requests_oauthlib import OAuth2Session
+from flask_session import Session
+#from waitress import serve
 
 host=os.environ['SQL_HOST']
 user=os.environ['SQL_USER']
 password=os.environ['SQL_PWD']
 db_name=os.environ['SQL_DB']
 
+with open("secrets.json") as f:
+    authCreds = json.load(f)["authentik"]
+
+# App configuration
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://{user}:{password}@{host}/{db_name}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
-def updateArtist_Song(action, artist, song):
-    if action == 'insert':
-        song.artists.append(artist)
-    elif action == 'drop':
-        song.artists.remove(artist)
+app.secret_key = os.urandom(24)
+app.config['PERMANENT_SESSION_LIFETIME'] = 1800
+# TODO: At some point need to set up cron job for cleaning up old sessions - use 'flask session_cleanup' command
+app.config['SESSION_TYPE'] = 'sqlalchemy'
+app.config['SESSION_SQLALCHEMY'] = db
+Session(app)
+
+# Authentik OAuth2 Configuration
+client_id = authCreds["client_id"]
+client_secret = authCreds["client_secret"]
+authorization_base_url = authCreds["authorization_base_url"]
+token_url = authCreds["token_url"]
+redirect_uri = authCreds["redirect_uri"]
+userinfo_url = authCreds["userinfo_url"]
+
+# TODO: Remove when HTTPS is set up correctly
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+
+# TODO: Look into Blueprints and defaults
+def checkAdmin():
+    if session.get('admin'):
+        return True
     else:
-        pass
+        return False
 
 @app.route('/')
 def index():
     return render_template("home.html")
+
+@app.route('/login')
+def login():
+    if session.get('user') is not None:
+        return redirect('/login/success')
+    else:
+        authentik = OAuth2Session(client_id, redirect_uri=redirect_uri)
+        authorization_url, state = authentik.authorization_url(authorization_base_url)
+        session['oauth_state'] = state
+        return redirect(authorization_url)
+    
+@app.route('/login/callback')
+def callback():
+    authentik = OAuth2Session(client_id, state=session['oauth_state'], redirect_uri=redirect_uri)
+    token = authentik.fetch_token(token_url, client_secret=client_secret,
+                                authorization_response=request.url)
+    
+    session['oauth_token'] = token
+    userinfo = authentik.get(userinfo_url).json()
+    session['user'] = userinfo
+    if 'MSDB Admins' in userinfo['groups']:
+        session['admin'] = True
+    else:
+        session['admin'] = False
+    return redirect('/login/success')
+
+@app.route('/login/success')
+def login_success():
+    return render_template("userinfo.html", success=True)
+
+@app.route('/userinfo')
+def userinfo():
+    if session.get('user') is None:
+        return redirect('/')
+    else:
+        return render_template("userinfo.html")
+
+@app.route('/logout')
+def logout():
+    if session.get('user') is None:
+        return redirect('/')
+    else:
+        session.clear()
+        # TODO: remove _external and _scheme after setting up WSGI
+        if request.referrer == url_for('login_success', _external=True, _scheme='https') or request.referrer == url_for('userinfo', _external=True, _scheme='https'):
+            return redirect('/')
+        else:
+            return redirect(request.referrer or '/')
+
+@app.route('/denied')
+def denied():
+    return render_template("denied.html")
 
 ### Artists
 @app.route('/artists')
@@ -39,10 +117,14 @@ def showArtists():
 
 @app.route('/insertartist')
 def insertArtistForm():
+    if not checkAdmin():
+        return redirect('/denied')
     return render_template("insertform.html", t="artist")
 
 @app.route('/newartist')
 def insertArtist():
+    if not checkAdmin():
+        return redirect('/denied')
     if request.args.get('name') is not None:
         artist = Artist(
             name=request.args.get("name"), 
@@ -57,6 +139,8 @@ def insertArtist():
     
 @app.route('/updateartist')
 def updateArtist():
+    if not checkAdmin():
+        return redirect('/denied')
     artist = Artist.query.get(request.args.get('artist_id'))
     artist.name = request.args.get('name')
     artist.nationality = request.args.get('nationality')
@@ -73,13 +157,18 @@ def showSongs():
     else:
         songs = Song.query.all()
         return render_template("showsongs.html", songs=songs)
-    
+
+# TODO: Add artist field for artist_to_song relationship
 @app.route('/insertsong')
 def insertSongForm():
+    if not checkAdmin():
+        return redirect('/denied')
     return render_template("insertform.html", t="song")
 
 @app.route('/newsong')
 def insertSong():
+    if not checkAdmin():
+        return redirect('/denied')
     if request.args.get('title') is not None:
         song = Song(
             title = request.args.get('title'),
@@ -94,6 +183,8 @@ def insertSong():
     
 @app.route('/updatesong')
 def updateSong():
+    if not checkAdmin():
+        return redirect('/denied')
     song_id = request.args.get('song_id')
     song = Song.query.get(song_id)
     song.title = request.args.get('title')
@@ -105,24 +196,22 @@ def updateSong():
     
     # If artist ID not blank, add to artist_song
     if artist_id:
-        artistToInsert = Artist.query.get(artist_id)
-        updateArtist_Song('insert', artistToInsert, song)
+        artist = Artist.query.get(artist_id)
+        song.artists.append(artist)
 
     # If artistsToRemove not blank, remove from artist_song
     if request.args.get('artistsToRemove'):
         removeList = request.args.get('artistsToRemove').split(',')
-        #print(removeList)
         for id in removeList:
             if id == '' or id is None:
                 continue
             artist = Artist.query.get(id)
-            #song.artists.remove(artist)
-            updateArtist_Song('drop', artist, song)
+            song.artists.remove(artist)
 
     db.session.commit()
     return redirect(f'songs?song_id={song_id}')
 
-# Samples and Repos
+### Samples and Repos
 
 @app.route('/samples')
 def showSamples():
@@ -146,7 +235,7 @@ def showSamples():
             if Song.query.filter_by(source_id=source_id).first() is not None:
                 song = Song.query.filter_by(source_id=source_id).first()
                 sources[source_id] = {"link": "songs?song_id=" + str(song.song_id), "name": song.title}
-            else:
+            elif Repo.query.filter_by(source_id=source_id).first() is not None:
                 repo = Repo.query.filter_by(source_id=source_id).first()
                 sources[source_id] = {"link": "repo?id=" + str(repo.source_id), "name": repo.name}
         return render_template("showsamples.html", samples=samples, sources=sources)
@@ -163,10 +252,14 @@ def showRepos():
 
 @app.route('/insertrepo')
 def insertRepoForm():
+    if not checkAdmin():
+        return redirect('/denied')
     return render_template("insertform.html", t="repo")
 
 @app.route('/newrepo')
 def insertRepo():
+    if not checkAdmin():
+        return redirect('/denied')
     if request.args.get('name') is not None:
         repo = {
             'name': request.args.get('name'),
@@ -184,6 +277,8 @@ def insertRepo():
 
 @app.route('/updaterepo')
 def updateRepo():
+    if not checkAdmin():
+        return redirect('/denied')
     source_id = request.args.get('source_id')
     repo = Repo.query.get(source_id)
     repo.name = request.args.get('name')
@@ -196,6 +291,8 @@ def updateRepo():
 
 @app.route('/insertsample')
 def insertSampleForm():
+    if not checkAdmin():
+        return redirect('/denied')
     sources = []
     for s in Song.query.all():
         sources.append(s)
@@ -208,6 +305,8 @@ def insertSampleForm():
 
 @app.route('/updatesample')
 def updateSample():
+    if not checkAdmin():
+        return redirect('/denied')
     sample_id = request.args.get('sample_id')
     sample = Sample.query.get(sample_id)
     sample.instrument = request.args.get('instrument')
@@ -233,6 +332,8 @@ def updateSample():
 
 @app.route('/newsample')
 def insertSample():
+    if not checkAdmin():
+        return redirect('/denied')
     sample = Sample(
         instrument=request.args.get('instrument'),
         genre=request.args.get('genre'),
@@ -246,21 +347,27 @@ def insertSample():
     db.session.commit()
     return redirect(f'samples?sample_id={sample.sample_id}')
 
-# Releases
+### Releases
 
 @app.route('/release')
 def showRelease():
     UPC = request.args.get('UPC')
     if UPC:
         release = Release.query.get(UPC)
+        if release.url is None or release.url == 'None':
+            cover_url = None
+        else:
+            cover_url = spotApi.get_album_cover(release.url)
         otherReleases = [r for r in Release.query.all() if r.UPC != release.UPC]
-        return render_template("showrelease.html", release=release, otherReleases=otherReleases)
+        return render_template("showrelease.html", release=release, otherReleases=otherReleases, cover_url=cover_url)
     else:
         otherReleases = Release.query.all()
         return render_template("showrelease.html", otherReleases=otherReleases)
 
 @app.route('/updaterelease')
 def updateRelease():
+    if not checkAdmin():
+        return redirect('/denied')
     UPC = request.args.get('UPC')
     if UPC:
         # This method allows for partial updates, but also still requires UPC (the primary key)
@@ -290,17 +397,22 @@ def updateRelease():
 
 @app.route('/insertrelease')
 def insertReleaseForm():
+    if not checkAdmin():
+        return redirect('/denied')
     return render_template("insertform.html", t="release")
 
 @app.route('/newrelease')
 def insertRelease():
+    if not checkAdmin():
+        return redirect('/denied')
     if request.args.get('UPC') is not None:
         release = Release(
             UPC=request.args.get('UPC'),
             title=request.args.get('title'),
             type=request.args.get('type'),
             numSongs=request.args.get('numSongs'),
-            releaseDate=request.args.get('releaseDate')
+            releaseDate=request.args.get('releaseDate'),
+            url=request.args.get('url')
         )
         db.session.add(release)
         db.session.commit()
@@ -310,6 +422,8 @@ def insertRelease():
 
 @app.route('/update')
 def updateForm():
+    if not checkAdmin():
+        return redirect('/denied')
     if request.args.get('artist_id') is not None:
         artist = Artist.query.get(request.args.get('artist_id'))
         if artist is None:
@@ -355,6 +469,13 @@ def updateForm():
                 for r in Repo.query.all():
                     if r.source_id != repo.source_id:
                         otherSources.append(r)
+            else:
+                # TODO: Check if this goes against ER/DB design
+                source = None
+                for s in Song.query.all():
+                    otherSources.append(s)
+                for r in Repo.query.all():
+                    otherSources.append(r)
             
             return render_template("updateform.html", 
                                    sample=sample, 
@@ -379,6 +500,8 @@ def updateForm():
 
 @app.route('/delete')
 def delete():
+    if not checkAdmin():
+        return redirect('/denied')
     # Blocks multiple item deletion (would rather dbms cascading deletes handle that)
     if len(request.args) > 1:
         return redirect("/")

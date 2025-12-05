@@ -1,16 +1,19 @@
 {% include 'header.html' %}
 
 <div class="card">
+{% if session['admin'] == true %}
 <p><a href='insertartist'><button type="button">Insert artist</button></a></p>
-
+{% endif %}
 <table>
     <tr>
     <th id="button">View</th>
     <th>Name</th>
     <th>Nationality</th>
     <th>Genre</th>
+    {% if session['admin'] == true %}
     <th id="button">Update</th>
     <th id="button">Delete</th>
+    {% endif %}
     </tr>
     {% for artist in artists %}
     <tr>
@@ -26,6 +29,7 @@
         <td>
             {{artist.genre}}
         </td>     
+        {% if session['admin'] == true %}
         <td id="button">
             <a href="update?artist_id={{artist.artist_id}}">
                 <button type="button">Update</button>
@@ -36,6 +40,7 @@
                 <button type="button">Delete</button>
             </a>
         </td>
+        {% endif %}
     </tr>
     {% endfor %}
 </table>

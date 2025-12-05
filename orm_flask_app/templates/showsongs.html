@@ -1,7 +1,9 @@
 {% include 'header.html' %}
 
 <div class="card">
+    {% if session['admin'] == true %}
 <p><a href='insertsong'><button type="button">Insert song</button></a></p>
+    {% endif %}
 
 
 <table>
@@ -13,8 +15,10 @@
     <th>Key</th>
     <th>BPM</th>
     <th>ISRC</th>
+    {% if session['admin'] == true %}
     <th id="button">Update</th>
     <th id="button">Delete</th>
+    {% endif %}
     </tr>
     {% for song in songs %}
     <tr>
@@ -41,6 +45,7 @@
         <td>
             {{song.ISRC}}
         </td>        
+        {% if session['admin'] == true %}
         <td id="button">
             <a href="update?song_id={{song.song_id}}">
                 <button type="button">Update</button>
@@ -51,6 +56,7 @@
                 <button type="button">Delete</button>
             </a>
         </td>
+        {% endif %}
     </tr>
     {% endfor %}
 </table>
