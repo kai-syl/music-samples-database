@@ -4,4 +4,5 @@ Project for CSCI 240 Databases &amp; SQL - A database describing the audio sampl
 # Work Breakdown Structure
 <img width="2743" height="1096" alt="WBS For Samples Database(1)" src="https://github.com/user-attachments/assets/d74ede4c-c956-4fe0-be9a-81e422666fe5" />
 
-
+# ER Diagram
+<img alt="ER Diagram" src="ER_Diagram_revision-4.png" />
