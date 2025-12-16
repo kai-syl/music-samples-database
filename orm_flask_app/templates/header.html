@@ -2,13 +2,13 @@
 <html>
     <head>
         <meta charset="utf-8">
-        <title>Kai's Flask app</title>
+        <title>Music Samples Database</title>
         <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     </head>
 
     <body>
         <header>
-        <h1 id="centered">Flask app yippee</h1>
+        <h1 id="centered">Music Samples Database</h1>
         <h3 id="centered">
             <nav>
                 <a href="/">Home</a>
@@ -17,9 +17,10 @@
                 <a href="/samples">Samples</a>
                 <a href="/release">Releases</a>
                 <a href="/repo">Packs/Repos</a>
+                <a href="https://github.com/kai-syl/music-samples-database/" target="_blank">GitHub</a>
                 {% if session.get('user') %}
-                    <a href="/logout" style="text-align: right;">Logout</a>
                     <a href="/userinfo" style="text-align: right;">User Info</a>
+                    <a href="/logout" style="text-align: right;">Logout</a>
                 {% else %}
                     <a href="/login">Login</a>
                 {% endif %}

@@ -9,7 +9,9 @@
 {% endif %}
 <table>
     <tr>
+    {% if session['admin'] == true %}
     <th>sample_id</th>
+    {% endif %}
     <th>Instrument/Type</th>
     <th>Genre</th>
     <th>Used on</th>
@@ -17,9 +19,11 @@
     </tr>
     
     <tr>
+        {% if session['admin'] == true %}
         <td>
             {{sample.sample_id}}
         </td>
+        {% endif %}
         <td>
             {{sample.instrument}}
         </td>

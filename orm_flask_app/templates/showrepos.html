@@ -38,10 +38,10 @@
             {{repo.billed}}
         </td>
         {% if session['admin'] == true %}
-        <td>
+        <td id="button">
             <a href='update?source_id={{repo.source_id}}'><button type="button">Update</button></a>
         </td>
-        <td>
+        <td id="button">
             <a href="delete?source_id={{repo.source_id}}" onclick="return confirm('Delete {{repo.name}}?')">
                 <button type="button">Delete</button>
             </a>

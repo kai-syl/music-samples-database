@@ -44,3 +44,37 @@ function removeButton({artist_id, artist_name, song_id, song_title = undefined})
     }
 
 }
+
+// TODO: needs revamped to the same functionality as moveSongs
+function addArtist({artist_id, artist_name}) {
+    let addArtistDisplay = document.getElementById('addArtistDisplay');
+    addArtistDisplay.innerHTML += '<br/>' + artist_name;
+    document.getElementById('artistsToAdd').value += artist_id + ',';
+}
+
+function moveSongs(direction) {
+    let songsSelect = document.getElementById('songs');
+    let songsAvailableSelect = document.getElementById('songsAvailable');
+    if (direction === 'left') {
+        // move from songsAvailable to songs
+        let selected = Array.from(songsAvailableSelect.selectedOptions);
+        selected.forEach(option => {
+            songsSelect.appendChild(option);
+            option.selected = false;
+        });
+    } else if (direction === 'right') {
+        // move from songs to songsAvailable
+        let selected = Array.from(songsSelect.selectedOptions);
+        selected.forEach(option => {
+            songsAvailableSelect.appendChild(option);
+            option.selected = false;
+        });
+    }
+}
+
+function selectAllSongs() {
+    let songsSelectOptions = document.getElementById('songs').options;
+    for (let i = 0; i < songsSelectOptions.length; i++) {
+        songsSelectOptions[i].selected = true;
+    }
+}

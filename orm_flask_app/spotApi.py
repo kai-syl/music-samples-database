@@ -4,7 +4,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 
 # https://spotipy.readthedocs.io/en/2.25.1/
 
-with open('secrets.json') as f:
+with open("./secrets.json") as f:
     creds = json.load(f)['spot_api_credentials']
 
 os.environ["SPOTIPY_CLIENT_ID"] = creds['client_id']

@@ -9,7 +9,9 @@
     {% endif %}
 <table>
     <tr>
+    {% if session['admin'] == true %}
     <th>artist_id</th>
+    {% endif %}
     <th>Name</th>
     <th>Nationality</th>
     <th>Genre</th>
@@ -17,9 +19,11 @@
     </tr>
     
     <tr>
+        {% if session['admin'] == true %}
         <td>
             {{artist.artist_id}}
         </td>
+        {% endif %}
         <td>
             {{artist.name}}
         </td>

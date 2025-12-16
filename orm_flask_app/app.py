@@ -15,7 +15,7 @@ user=os.environ['SQL_USER']
 password=os.environ['SQL_PWD']
 db_name=os.environ['SQL_DB']
 
-with open("secrets.json") as f:
+with open("./secrets.json") as f:
     authCreds = json.load(f)["authentik"]
 
 # App configuration
@@ -49,8 +49,13 @@ def checkAdmin():
     else:
         return False
 
+songKeys = ['N/A', 'AM', 'Am', 'BbM', 'Bbm', 'BM', 'Bm', 'CM', 'Cm', 'DbM', 'Dbm', 'DM', 
+            'Dm', 'EbM', 'Ebm', 'EM', 'Em', 'FM', 'Fm', 'GbM', 'Gbm', 'GM', 'Gm']
+
 @app.route('/')
 def index():
+    # if session.get('user') is None and session.get('logged_out') is not True:
+    #     return redirect('/login')
     return render_template("home.html")
 
 @app.route('/login')
@@ -95,6 +100,7 @@ def logout():
         return redirect('/')
     else:
         session.clear()
+        session['logged_out'] = True
         # TODO: remove _external and _scheme after setting up WSGI
         if request.referrer == url_for('login_success', _external=True, _scheme='https') or request.referrer == url_for('userinfo', _external=True, _scheme='https'):
             return redirect('/')
@@ -119,7 +125,8 @@ def showArtists():
 def insertArtistForm():
     if not checkAdmin():
         return redirect('/denied')
-    return render_template("insertform.html", t="artist")
+    songsAvailable = Song.query.all()
+    return render_template("insertform.html", t="artist", songsAvailable=songsAvailable)
 
 @app.route('/newartist')
 def insertArtist():
@@ -129,8 +136,15 @@ def insertArtist():
         artist = Artist(
             name=request.args.get("name"), 
             nationality=request.args.get("nationality"), 
-            genre=request.args.get("genre")
+            genre=request.args.get("genre"),
         )
+        if request.args.getlist('songs'):
+                for song in request.args.getlist('songs'):
+                    if song == '' or song is None:
+                        continue
+                    else: 
+                        s = Song.query.get(song)
+                        artist.songs.append(s)
         db.session.add(artist)
         db.session.commit()
         return redirect("artists")
@@ -145,6 +159,22 @@ def updateArtist():
     artist.name = request.args.get('name')
     artist.nationality = request.args.get('nationality')
     artist.genre = request.args.get('genre')
+    songs = [int(x) for x in request.args.getlist('songs')]
+    print(request.args.getlist('songs'))
+    for song in artist.songs:
+        if song.song_id not in songs:
+            s = Song.query.get(song.song_id)
+            artist.songs.remove(s)
+            print(f"Removed song {s.title} {s.song_id} from {artist.name}")
+    for song in songs:
+        if song == '' or song is None:
+            continue
+        else: 
+            s = Song.query.get(song)
+            if s in artist.songs:
+                continue
+            else:
+                artist.songs.append(s)
     db.session.commit()
     return redirect('artists')
 
@@ -163,7 +193,7 @@ def showSongs():
 def insertSongForm():
     if not checkAdmin():
         return redirect('/denied')
-    return render_template("insertform.html", t="song")
+    return render_template("insertform.html", t="song", songKeys=songKeys)
 
 @app.route('/newsong')
 def insertSong():
@@ -210,6 +240,18 @@ def updateSong():
 
     db.session.commit()
     return redirect(f'songs?song_id={song_id}')
+
+# TODO: copy functionality from artists and remove this template
+@app.route('/addartists')
+def addArtists():
+    if not checkAdmin():
+        return redirect('/denied')
+    song_id = request.args.get('song_id')
+    song = Song.query.get(song_id)
+    allArtists = Artist.query.all()
+    songArtists = [x.artist_id for x in song.artists]
+    otherArtists = Artist.query.filter(Artist.artist_id.not_in(songArtists))
+    return render_template("addartists.html", song=song, otherArtists=otherArtists)
 
 ### Samples and Repos
 
@@ -354,7 +396,7 @@ def showRelease():
     UPC = request.args.get('UPC')
     if UPC:
         release = Release.query.get(UPC)
-        if release.url is None or release.url == 'None':
+        if release.url is None or release.url == 'None' or release.url == '':
             cover_url = None
         else:
             cover_url = spotApi.get_album_cover(release.url)
@@ -429,7 +471,9 @@ def updateForm():
         if artist is None:
             return redirect('artists')
         else:
-            return render_template("updateform.html", artist=artist)
+            songs = [x.song_id for x in artist.songs]
+            songsAvailable = Song.query.filter(Song.song_id.not_in(songs)).all()
+            return render_template("updateform.html", artist=artist, songsAvailable=songsAvailable)
     elif request.args.get('song_id') is not None:
         song = Song.query.get(request.args.get('song_id'))
         songArtists = [x.artist_id for x in song.artists]
@@ -437,7 +481,7 @@ def updateForm():
         if song is None:
             return redirect('songs')
         else:
-            return render_template("updateform.html", song=song, otherArtists=otherArtists)
+            return render_template("updateform.html", song=song, otherArtists=otherArtists, songKeys=songKeys)
     elif request.args.get('sample_id') is not None:
         # Need to add "used on" selection removal
         sample = Sample.query.get(request.args.get('sample_id'))

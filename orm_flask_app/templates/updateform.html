@@ -8,13 +8,38 @@
     <label for="name">Artist name: </label><input id="name" type="text" name="name" / value="{{artist.name}}"><br />
     <label for="nationality">Nationality: </label><input id="nationality" type="text" name="nationality" value="{{artist.nationality}}"/><br />
     <label for="genre">Genre: </label><input id="genre" type="text" name="genre" value="{{artist.genre}}"/><br />
-    <button type="submit">Update artist</button>
+<div style='width: fit-content; min-width: 400px; display: flex;'>
+    <div style="float: left; margin-right: 5%; WIDTH: auto;">
+    <label for="songs">Songs: </label><br/>
+        <select name="songs" id="songs" multiple size="10" style="min-width: 205px; width: fit-content;">
+            {% for song in artist.songs %}
+            <option value="{{song.song_id}}">{{song.title}}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div style="float: left; width: 50px; height: 242px; line-height: 121px;">
+        <button type="button" onclick="moveSongs('left')"><i class="arrow left"></i></button>
+        <button type="button" onclick="moveSongs('right')"><i class="arrow right"></i></button>
+    </div>
+    <div style="float: left; margin-left: 5%;">
+    <label for="songsAvailable" >Add songs: </label><br/>
+        <select id="songsAvailable" name="songsAvailable" multiple size="10" style="min-width: 205px; width: fit-content;">
+            {% for song in songsAvailable %}
+            <option value="{{song.song_id}}">{{song.title}}</option>
+            {% endfor %}
+        </select>
+        
+    </div>
+</div>
+    <br style="clear: both;"/>
+    <button type="submit" onclick="selectAllSongs()">Update artist</button>
 </form>
 
 {% elif request.args.song_id is defined %}
 <form class="form-inline" action="updatesong">
     <input type="hidden" name="song_id" value="{{song.song_id}}" />
     <label for="title">Title: </label><input id="title" type="text" name="title" value="{{song.title}}"><br />
+    <input id="artistsToRemove" type="hidden" name="artistsToRemove" value=""/>
     <label for="artist">Current artist(s): </label>
         {% for artist in song.artists %}
         <br/><div id='artist_id[{{artist.artist_id}}]' name="{{artist.name}}">
@@ -32,8 +57,13 @@
             {% endfor %}
         </select>
     <br/>
-    <input id="artistsToRemove" type="hidden" name="artistsToRemove" value=""/>
-    <label for="key">Key: </label><input id="key" type="text" name="key" value="{{song.key}}"/><br />
+    <label for="key">Key: </label>
+        <select id="key" name="key">
+            {% for key in songKeys %}
+            <option value="{{key}}" {% if key == song.key %}selected{% endif %}>{{key}}</option>
+            {% endfor %}
+        </select>
+    <br />
     <label for="genre">Genre: </label><input id="genre" type="text" name="genre" value="{{song.genre}}"/><br />
     <label for="bpm">BPM: </label><input id="bpm" type="number" name="bpm" min="10" max="400" value="{{song.bpm}}"/><br />
     <label for="ISRC">ISRC: </label><input id="ISRC" type="text" name="ISRC" maxlength="12" value="{{song.ISRC}}"/><br/>
