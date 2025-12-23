@@ -18,8 +18,8 @@
         </select>
     </div>
     <div style="float: left; width: 50px; height: 242px; line-height: 121px;">
-        <button type="button" onclick="moveSongs('left')"><i class="arrow left"></i></button>
-        <button type="button" onclick="moveSongs('right')"><i class="arrow right"></i></button>
+        <button type="button" onclick="moveItems('left', 'songs')"><i class="arrow left"></i></button>
+        <button type="button" onclick="moveItems('right', 'songs')"><i class="arrow right"></i></button>
     </div>
     <div style="float: left; margin-left: 5%;">
     <label for="songsAvailable" >Add songs: </label><br/>
@@ -32,31 +32,38 @@
     </div>
 </div>
     <br style="clear: both;"/>
-    <button type="submit" onclick="selectAllSongs()">Update artist</button>
+    <button type="submit" onclick="selectAll('songs')">Update artist</button>
 </form>
 
 {% elif request.args.song_id is defined %}
 <form class="form-inline" action="updatesong">
     <input type="hidden" name="song_id" value="{{song.song_id}}" />
     <label for="title">Title: </label><input id="title" type="text" name="title" value="{{song.title}}"><br />
-    <input id="artistsToRemove" type="hidden" name="artistsToRemove" value=""/>
-    <label for="artist">Current artist(s): </label>
-        {% for artist in song.artists %}
-        <br/><div id='artist_id[{{artist.artist_id}}]' name="{{artist.name}}">
-        <button type="button" id="deleteartist" onclick="removeButton({artist_id: '{{artist.artist_id}}', artist_name: '{{artist.name}}'})">Remove</button>
-        {{artist.name}}
-        </div>
-        {% endfor %}
-        <br/><button type="button" onclick="resetRemovalList('artist')">Reset removal</button>
-        <br/><br/>
-    <label for="artist_id">Add artist: </label>
-        <select id="artist_id" name="artist_id">
-            <option value="">--Please select an artist--</option>
-            {% for artist in otherArtists %}
+<div style='width: fit-content; min-width: 400px; display: flex;'>
+    <div style="float: left; margin-right: 5%; WIDTH: auto;">
+    <label for="artists">Artist(s): </label><br/>
+        <select name="artists" id="artists" multiple size="10" style="min-width: 205px; width: fit-content;">
+            {% for artist in song.artists %}
             <option value="{{artist.artist_id}}">{{artist.name}}</option>
             {% endfor %}
         </select>
-    <br/>
+    </div>
+    <div style="float: left; width: 50px; height: 242px; line-height: 121px;">
+        <button type="button" onclick="moveItems('left', 'artists')"><i class="arrow left"></i></button>
+        <button type="button" onclick="moveItems('right', 'artists')"><i class="arrow right"></i></button>
+    </div>
+    <div style="float: left; margin-left: 5%;">
+    <label for="artistsAvailable" >Add artist(s): </label><br/>
+        <select id="artistsAvailable" name="artistsAvailable" multiple size="10" style="min-width: 205px; width: fit-content;">
+            {% for artist in artistsAvailable %}
+            <option value="{{artist.artist_id}}">{{artist.name}}</option>
+            {% endfor %}
+        </select>
+        
+    </div>
+</div>
+    <br style="clear: both;"/>
+
     <label for="key">Key: </label>
         <select id="key" name="key">
             {% for key in songKeys %}
@@ -67,7 +74,7 @@
     <label for="genre">Genre: </label><input id="genre" type="text" name="genre" value="{{song.genre}}"/><br />
     <label for="bpm">BPM: </label><input id="bpm" type="number" name="bpm" min="10" max="400" value="{{song.bpm}}"/><br />
     <label for="ISRC">ISRC: </label><input id="ISRC" type="text" name="ISRC" maxlength="12" value="{{song.ISRC}}"/><br/>
-    <button type="submit">Update song</button>
+    <button type="submit" onclick="selectAll('artists')">Update song</button>
 </form>
 
 {% elif request.args.sample_id is defined %}
@@ -92,27 +99,32 @@
             </option>
             {% endfor %}
         </select><br />
-    <label for="used_on">Used on: </label>
-        <br/>
-        {% for song in sample.on_songs %}
-        <div id='song_id[{{song.song_id}}]' name="{{song.title}}">
-        <button type="button" id="deletesong" onclick="removeButton({song_id: '{{song.song_id}}', song_title: '{{song.title}}'})">Remove</button>
-        {{song.title}}
-        </div><br/>
-        {% endfor %}
-        <input id="songsToRemove" type="hidden" name="songsToRemove" value=""/>
-        <button type="button" onclick="resetRemovalList('song')">Reset</button>
-        <br/>
-        <label>Add to song: </label>
-        <select id="song_id" name="song_id">
-            <option value="">--Please select a song--</option>
-            {% for song in otherSongs %}
+
+<div style='width: fit-content; min-width: 400px; display: flex;'>
+    <div style="float: left; margin-right: 5%; WIDTH: auto;">
+    <label for="on_songs">Used on: </label><br/>
+        <select name="on_songs" id="on_songs" multiple size="10" style="min-width: 205px; width: fit-content;">
+            {% for song in sample.on_songs %}
             <option value="{{song.song_id}}">{{song.title}}</option>
             {% endfor %}
         </select>
-        <br />
+    </div>
+    <div style="float: left; width: 50px; height: 242px; line-height: 121px;">
+        <button type="button" onclick="moveItems('left', 'on_songs')"><i class="arrow left"></i></button>
+        <button type="button" onclick="moveItems('right', 'on_songs')"><i class="arrow right"></i></button>
+    </div>
+    <div style="float: left; margin-left: 5%;">
+    <label for="songsAvailable" >Add artist(s): </label><br/>
+        <select id="songsAvailable" name="songsAvailable" multiple size="10" style="min-width: 205px; width: fit-content;">
+            {% for song in songsAvailable %}
+            <option value="{{song.song_id}}">{{song.title}}</option>
+            {% endfor %}
+        </select>
+        
+    </div>
+</div>
 
-    <button type="submit">Update sample</button>
+    <button type="submit" onclick="selectAll('on_songs')">Update sample</button>
 </form>
 
 {% elif request.args.UPC is defined %}

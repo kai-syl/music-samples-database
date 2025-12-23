@@ -1,1 +1,4 @@
 secrets.json
+*.egg*
+__pycache__/
+.cache*

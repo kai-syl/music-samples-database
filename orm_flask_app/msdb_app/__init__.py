@@ -1,10 +1,10 @@
 from flask import Flask, render_template, redirect, request, session, url_for
-import os, json, spotApi
+import os, json
 
 from sqlalchemy import text
-from extensions import db
-from models import *
-import spotApi
+from .extensions import db
+from .models import *
+from . import spotApi
 
 from requests_oauthlib import OAuth2Session
 from flask_session import Session
@@ -160,12 +160,11 @@ def updateArtist():
     artist.nationality = request.args.get('nationality')
     artist.genre = request.args.get('genre')
     songs = [int(x) for x in request.args.getlist('songs')]
-    print(request.args.getlist('songs'))
+
     for song in artist.songs:
         if song.song_id not in songs:
             s = Song.query.get(song.song_id)
             artist.songs.remove(s)
-            print(f"Removed song {s.title} {s.song_id} from {artist.name}")
     for song in songs:
         if song == '' or song is None:
             continue
@@ -188,12 +187,12 @@ def showSongs():
         songs = Song.query.all()
         return render_template("showsongs.html", songs=songs)
 
-# TODO: Add artist field for artist_to_song relationship
 @app.route('/insertsong')
 def insertSongForm():
     if not checkAdmin():
         return redirect('/denied')
-    return render_template("insertform.html", t="song", songKeys=songKeys)
+    artists = Artist.query.all()
+    return render_template("insertform.html", t="song", songKeys=songKeys, artistsAvailable=artists)
 
 @app.route('/newsong')
 def insertSong():
@@ -207,6 +206,13 @@ def insertSong():
             genre = request.args.get('genre'),
             ISRC = request.args.get('ISRC')
         )
+        if request.args.getlist('artists'):
+                for artist in request.args.getlist('artists'):
+                    if artist == '' or artist is None:
+                        continue
+                    else: 
+                        a = Artist.query.get(artist)
+                        song.artists.append(a)
         db.session.add(song)
         db.session.commit()
         return redirect("songs")
@@ -222,36 +228,26 @@ def updateSong():
     song.genre = request.args.get('genre')
     song.bpm = request.args.get('bpm')
     song.ISRC = request.args.get('ISRC')
-    artist_id = request.args.get('artist_id')
-    
-    # If artist ID not blank, add to artist_song
-    if artist_id:
-        artist = Artist.query.get(artist_id)
-        song.artists.append(artist)
 
-    # If artistsToRemove not blank, remove from artist_song
-    if request.args.get('artistsToRemove'):
-        removeList = request.args.get('artistsToRemove').split(',')
-        for id in removeList:
-            if id == '' or id is None:
+    artists = [int(x) for x in request.args.getlist('artists')]
+
+    for artist in song.artists:
+        if artist.artist_id not in artists:
+            a = Artist.query.get(artist.artist_id)
+            song.artists.remove(a)
+            print(f"Removed song {a.name} {a.artist_id} from {song.song_id}")
+    for artist in artists:
+        if artist == '' or artist is None:
+            continue
+        else: 
+            a = Artist.query.get(artist)
+            if a in song.artists:
                 continue
-            artist = Artist.query.get(id)
-            song.artists.remove(artist)
+            else:
+                song.artists.append(a)
 
     db.session.commit()
     return redirect(f'songs?song_id={song_id}')
-
-# TODO: copy functionality from artists and remove this template
-@app.route('/addartists')
-def addArtists():
-    if not checkAdmin():
-        return redirect('/denied')
-    song_id = request.args.get('song_id')
-    song = Song.query.get(song_id)
-    allArtists = Artist.query.all()
-    songArtists = [x.artist_id for x in song.artists]
-    otherArtists = Artist.query.filter(Artist.artist_id.not_in(songArtists))
-    return render_template("addartists.html", song=song, otherArtists=otherArtists)
 
 ### Samples and Repos
 
@@ -342,8 +338,8 @@ def insertSampleForm():
         sources.append(r)
     
     # Get songs by artist 1 (me) for "used on" selection
-    on_songs = Artist.query.get(1).songs
-    return render_template("insertform.html", t="sample", sources=sources, on_songs=on_songs)
+    songsAvailable = Artist.query.get(1).songs
+    return render_template("insertform.html", t="sample", sources=sources, songsAvailable=songsAvailable)
 
 @app.route('/updatesample')
 def updateSample():
@@ -354,20 +350,22 @@ def updateSample():
     sample.instrument = request.args.get('instrument')
     sample.genre = request.args.get('genre')
     sample.source_id = request.args.get('source_id')
-    song_id = request.args.get('song_id')
 
-    if song_id:
-        songToInsert = Song.query.get(song_id)
-        sample.on_songs.append(songToInsert)
+    songs = [int(x) for x in request.args.getlist('on_songs')]
 
-    # If songsToRemove not blank, remove from sample_on_song
-    if request.args.get('songsToRemove'):
-        removeList = request.args.get('songsToRemove').split(',')
-        for id in removeList:
-            if id == '' or id is None:
+    for song in sample.on_songs:
+        if song not in songs:
+            s = Song.query.get(song.song_id)
+            sample.on_songs.remove(s)
+    for song in songs:
+        if song == '' or song is None:
+            continue
+        else: 
+            s = Song.query.get(song)
+            if s in sample.on_songs:
                 continue
-            song = Song.query.get(id)
-            sample.on_songs.remove(song)
+            else:
+                sample.on_songs.append(s)
 
     db.session.commit()
     return redirect(f'samples?sample_id={sample_id}')
@@ -381,10 +379,14 @@ def insertSample():
         genre=request.args.get('genre'),
         source_id=request.args.get('source_id')
     )
-    song_id = request.args.get('song_id')
-    if song_id:
-        songToInsert = Song.query.get(song_id)
-        sample.on_songs.append(songToInsert)
+    if request.args.getlist('on_songs'):
+            for song in request.args.getlist('on_songs'):
+                if song == '' or song is None:
+                    continue
+                else: 
+                    s = Song.query.get(song)
+                    sample.on_songs.append(s)
+
     db.session.add(sample)
     db.session.commit()
     return redirect(f'samples?sample_id={sample.sample_id}')
@@ -466,6 +468,7 @@ def insertRelease():
 def updateForm():
     if not checkAdmin():
         return redirect('/denied')
+    
     if request.args.get('artist_id') is not None:
         artist = Artist.query.get(request.args.get('artist_id'))
         if artist is None:
@@ -477,13 +480,12 @@ def updateForm():
     elif request.args.get('song_id') is not None:
         song = Song.query.get(request.args.get('song_id'))
         songArtists = [x.artist_id for x in song.artists]
-        otherArtists = Artist.query.filter(Artist.artist_id.not_in(songArtists))
+        artistsAvailable = Artist.query.filter(Artist.artist_id.not_in(songArtists))
         if song is None:
             return redirect('songs')
         else:
-            return render_template("updateform.html", song=song, otherArtists=otherArtists, songKeys=songKeys)
+            return render_template("updateform.html", song=song, artistsAvailable=artistsAvailable, songKeys=songKeys)
     elif request.args.get('sample_id') is not None:
-        # Need to add "used on" selection removal
         sample = Sample.query.get(request.args.get('sample_id'))
         if sample is None:
             return redirect('samples')
@@ -525,7 +527,7 @@ def updateForm():
                                    sample=sample, 
                                    source=source, 
                                    otherSources=otherSources,
-                                   otherSongs=otherSongs)
+                                   songsAvailable=otherSongs)
     elif request.args.get('UPC') is not None:
         release = Release.query.get(request.args.get('UPC'))
         if release is None:

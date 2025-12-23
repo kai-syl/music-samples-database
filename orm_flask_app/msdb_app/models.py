@@ -1,4 +1,4 @@
-from extensions import db
+from .extensions import db
 
 artist_song = db.Table('artist_song',
     db.Column('artist_id', db.Integer, db.ForeignKey('artist.artist_id'), primary_key=True),
