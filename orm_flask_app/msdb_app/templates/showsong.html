@@ -3,8 +3,8 @@
 <div class="card">
 
     {% if session['admin'] == true %}
-<p><a href='update?song_id={{song.song_id}}'><button type="button">Update</button></a>
-<a href="delete?song_id={{song.song_id}}" onclick="return confirm('Delete {{song.title}}?')">
+<p><a href='/update?song_id={{song.song_id}}'><button type="button">Update</button></a>
+<a href="/delete?song_id={{song.song_id}}" onclick="return confirm('Delete {{song.title}}?')">
                 <button type="button">Delete</button>
 </a></p>
     {% endif %}
@@ -32,13 +32,13 @@
         </td>
         <td>
             {% for artist in song.artists %}
-            <a href="artists?artist_id={{artist.artist_id}}">{{artist.name}}</a><br/>
+            <a href="/artists/{{artist.artist_id}}">{{artist.name}}</a><br/>
             {% endfor %}
 
         </td>
         <td>
             {% for release in song.releases %}
-            <a href="release?UPC={{release.UPC}}">{{release.title}}</a><br/>
+            <a href="/release?UPC={{release.UPC}}">{{release.title}}</a><br/>
             {% endfor %}
         </td>
         <td>

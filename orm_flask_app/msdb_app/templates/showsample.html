@@ -32,15 +32,15 @@
         </td>   
         <td>
             {% for song in sample.on_songs %}
-            <a href="songs?song_id={{song.song_id}}">{{song.title}}</a><br/>
+            <a href="/songs/{{song.song_id}}">{{song.title}}</a><br/>
             {% endfor %}
         </td>
         <td>
             {% if song is defined %}
-                <a href="songs?song_id={{song.song_id}}">{{song.title}}</a>
+                <a href="/songs/{{song.song_id}}">{{song.title}}</a>
             {% endif %}
             {% if repo is defined %}
-                <a href="repo?id={{repo.source_id}}">{{repo.name}}</a>
+                <a href="/repo/{{repo.source_id}}">{{repo.name}}</a>
             {% endif %}
         </td>
     </tr>

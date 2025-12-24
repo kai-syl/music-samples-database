@@ -19,7 +19,7 @@
     {% for sample in samples %}
     <tr>
         <td id="button">
-            <a href="?sample_id={{sample.sample_id}}"><button type="button">View</button></a>
+            <a href="/samples/{{sample.sample_id}}"><button type="button">View</button></a>
         </td>
         <td>
             {{sample.instrument}}

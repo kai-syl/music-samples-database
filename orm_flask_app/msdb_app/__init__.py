@@ -8,6 +8,7 @@ from . import spotApi
 
 from requests_oauthlib import OAuth2Session
 from flask_session import Session
+from werkzeug.middleware.proxy_fix import ProxyFix
 #from waitress import serve
 
 host=os.environ['SQL_HOST']
@@ -40,7 +41,8 @@ redirect_uri = authCreds["redirect_uri"]
 userinfo_url = authCreds["userinfo_url"]
 
 # TODO: Remove when HTTPS is set up correctly
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+#os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 
 # TODO: Look into Blueprints and defaults
 def checkAdmin():
@@ -115,11 +117,17 @@ def denied():
 @app.route('/artists')
 def showArtists():
     if request.args.get('artist_id'):
-        artist = Artist.query.get(request.args.get('artist_id'))
-        return render_template("showartist.html", artist=artist)
+        return redirect(f"/artists/{request.args.get('artist_id')}")
     else:
         artists = Artist.query.all()
         return render_template("showartists.html", artists=artists)
+
+@app.route('/artists/<int:artist_id>')
+def showArtistByID(artist_id):
+    artist = Artist.query.get(artist_id)
+    if artist is None:
+        return redirect('/artists')
+    return render_template("showartist.html", artist=artist)
 
 @app.route('/insertartist')
 def insertArtistForm():
@@ -181,11 +189,17 @@ def updateArtist():
 @app.route('/songs')
 def showSongs():
     if request.args.get('song_id'):
-        song = Song.query.get(request.args.get('song_id'))
-        return render_template("showsong.html", song=song)
+        return redirect(f"/songs/{request.args.get('song_id')}")
     else:
         songs = Song.query.all()
         return render_template("showsongs.html", songs=songs)
+
+@app.route('/songs/<int:song_id>')
+def showSongByID(song_id):
+    song = Song.query.get(song_id)
+    if song is None:
+        return redirect('/songs')
+    return render_template("showsong.html", song=song)
 
 @app.route('/insertsong')
 def insertSongForm():
@@ -255,16 +269,7 @@ def updateSong():
 def showSamples():
     sample_id = request.args.get('sample_id')
     if sample_id:
-        sample = Sample.query.get(sample_id)
-        source_id = sample.source_id
-        # check if sampleSource is a song or repo
-        if Song.query.filter_by(source_id=source_id).first() is not None:
-            song = Song.query.filter_by(source_id=source_id).first()
-            return render_template("showsample.html", sample=sample, song=song)
-        else:
-            repo = Repo.query.filter_by(source_id=source_id).first()
-            return render_template("showsample.html", sample=sample, repo=repo)
-
+        return redirect(f"/samples/{sample_id}")
     else:
         samples = Sample.query.all()
         sources = {}
@@ -272,21 +277,37 @@ def showSamples():
             source_id = sample.source_id
             if Song.query.filter_by(source_id=source_id).first() is not None:
                 song = Song.query.filter_by(source_id=source_id).first()
-                sources[source_id] = {"link": "songs?song_id=" + str(song.song_id), "name": song.title}
+                sources[source_id] = {"link": "/songs/" + str(song.song_id), "name": song.title}
             elif Repo.query.filter_by(source_id=source_id).first() is not None:
                 repo = Repo.query.filter_by(source_id=source_id).first()
-                sources[source_id] = {"link": "repo?id=" + str(repo.source_id), "name": repo.name}
+                sources[source_id] = {"link": "/repo/" + str(repo.source_id), "name": repo.name}
         return render_template("showsamples.html", samples=samples, sources=sources)
+
+@app.route('/samples/<int:sample_id>')
+def showSample(sample_id):
+    sample = Sample.query.get(sample_id)
+    source_id = sample.source_id
+    # check if sampleSource is a song or repo
+    if Song.query.filter_by(source_id=source_id).first() is not None:
+        song = Song.query.filter_by(source_id=source_id).first()
+        return render_template("showsample.html", sample=sample, song=song)
+    else:
+        repo = Repo.query.filter_by(source_id=source_id).first()
+        return render_template("showsample.html", sample=sample, repo=repo)
 
 @app.route('/repo')
 def showRepos():
     source_id = request.args.get('id')
     if source_id:
-        repo = Repo.query.get(source_id)
-        return render_template("showrepo.html", repo=repo)
+        return redirect(f"/repo/{source_id}")
     else:
         repos = Repo.query.all()
         return render_template("showrepos.html", repos=repos)
+
+@app.route('/repo/<int:source_id>')
+def showRepo(source_id):
+    repo = Repo.query.get(source_id)
+    return render_template("showrepo.html", repo=repo)
 
 @app.route('/insertrepo')
 def insertRepoForm():
@@ -393,9 +414,12 @@ def insertSample():
 
 ### Releases
 
-@app.route('/release')
-def showRelease():
-    UPC = request.args.get('UPC')
+@app.route('/release', methods=['GET', 'POST'])
+def showRelease(UPC=None):
+    if request.method == 'GET':
+        UPC = request.args.get('UPC')
+    if request.method == 'POST':
+        UPC = request.form.get('UPC')
     if UPC:
         release = Release.query.get(UPC)
         if release.url is None or release.url == 'None' or release.url == '':
@@ -417,20 +441,26 @@ def updateRelease():
         # This method allows for partial updates, but also still requires UPC (the primary key)
         attrs = request.args
         release = Release.query.get(UPC)
-        if request.args.get('songsToRemove'):
-            removeList = request.args.get('songsToRemove').split(',')
-            for id in removeList:
-                if id == '' or id is None:
-                    continue
-                song = Song.query.get(id)
-                release.songs.remove(song)
+
+        songs = [int(x) for x in request.args.getlist('songs') if x != '-1']
+        
         for i in request.args:
-            if i == 'songsToRemove':
-                continue
-            elif i == 'song_id':
-                song = Song.query.get(request.args.get('song_id'))
-                if song:
-                    release.songs.append(song)
+            if i == 'songs':
+
+                for song in release.songs:
+                    if song.song_id not in songs:
+                        s = Song.query.get(song.song_id)
+                        release.songs.remove(s)
+                        print(f"Removed song {s.title} {s.song_id} from release {release.UPC}")
+                for song in songs:
+                    if song == '' or song is None:
+                        continue
+                    else: 
+                        s = Song.query.get(song)
+                        if s in release.songs:
+                            continue
+                        else:
+                            release.songs.append(s)
 
             else:
                 release.__setattr__(i, attrs[i])
@@ -443,7 +473,8 @@ def updateRelease():
 def insertReleaseForm():
     if not checkAdmin():
         return redirect('/denied')
-    return render_template("insertform.html", t="release")
+    otherSongs = Song.query.all()
+    return render_template("insertform.html", t="release", songsAvailable=otherSongs)
 
 @app.route('/newrelease')
 def insertRelease():
@@ -455,9 +486,17 @@ def insertRelease():
             title=request.args.get('title'),
             type=request.args.get('type'),
             numSongs=request.args.get('numSongs'),
-            releaseDate=request.args.get('releaseDate'),
-            url=request.args.get('url')
+            releaseDate=request.args.get('releaseDate')
         )
+        if request.args.getlist('songs'):
+            for song in request.args.getlist('songs'):
+                if song == '' or song is None:
+                    continue
+                else: 
+                    s = Song.query.get(song)
+                    release.songs.append(s)
+        if request.args.get('url'):
+            release.url = request.args.get('url')
         db.session.add(release)
         db.session.commit()
         return redirect(f"release?UPC={release.UPC}")
@@ -470,6 +509,7 @@ def updateForm():
         return redirect('/denied')
     
     if request.args.get('artist_id') is not None:
+    ### ARTISTS
         artist = Artist.query.get(request.args.get('artist_id'))
         if artist is None:
             return redirect('artists')
@@ -478,6 +518,7 @@ def updateForm():
             songsAvailable = Song.query.filter(Song.song_id.not_in(songs)).all()
             return render_template("updateform.html", artist=artist, songsAvailable=songsAvailable)
     elif request.args.get('song_id') is not None:
+    ### SONGS
         song = Song.query.get(request.args.get('song_id'))
         songArtists = [x.artist_id for x in song.artists]
         artistsAvailable = Artist.query.filter(Artist.artist_id.not_in(songArtists))
@@ -486,6 +527,7 @@ def updateForm():
         else:
             return render_template("updateform.html", song=song, artistsAvailable=artistsAvailable, songKeys=songKeys)
     elif request.args.get('sample_id') is not None:
+    ### SAMPLES
         sample = Sample.query.get(request.args.get('sample_id'))
         if sample is None:
             return redirect('samples')
@@ -529,6 +571,7 @@ def updateForm():
                                    otherSources=otherSources,
                                    songsAvailable=otherSongs)
     elif request.args.get('UPC') is not None:
+    ### RELEASES
         release = Release.query.get(request.args.get('UPC'))
         if release is None:
             return redirect('/')
@@ -536,6 +579,7 @@ def updateForm():
             otherSongs = Song.query.filter(Song.song_id.not_in([s.song_id for s in release.songs]))
             return render_template("updateform.html", release=release, otherSongs=otherSongs)
     elif request.args.get('source_id') is not None:
+    ### REPOS
         repo = Repo.query.get(request.args.get('source_id'))
         if repo is None:
             return redirect('repo')

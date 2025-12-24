@@ -20,10 +20,10 @@
     {% for repo in repos %}
     <tr>
         <td id="button">
-            <a href="/repo?id={{repo.source_id}}"><button type="button">View</button></a>
+            <a href="/repo/{{repo.source_id}}"><button type="button">View</button></a>
         </td>
         <td>
-            <a href="/repo?id={{repo.source_id}}">{{repo.name}}</a>
+            <a href="/repo/{{repo.source_id}}">{{repo.name}}</a>
         </td>
         <td>
             {{repo.type}}

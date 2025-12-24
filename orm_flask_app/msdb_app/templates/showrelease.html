@@ -4,7 +4,7 @@
 {% if session['admin'] == true %}
 <p class="card"><a href="/insertrelease"><button type="button">New release</button></a></p>
 {% endif %}
-<form action="/release" method="get">
+<form action="/release" method="post">
     <label for="UPC">Select a release:</label>
     <select name="UPC" id="UPC" onchange="this.form.submit()">
         {% if release is defined %}
@@ -48,7 +48,7 @@
     <dd>{{release.UPC}}</dd>
     <dd>
         {% for song in release.songs %}
-        <a href="songs?song_id={{song.song_id}}">{{song.title}}</a><br/>
+        <a href="/songs/{{song.song_id}}">{{song.title}}</a><br/>
         {% endfor %}
     </dd>
 </dl>

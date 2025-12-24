@@ -23,14 +23,14 @@
     {% for song in songs %}
     <tr>
         <td id="button">
-            <a href="songs?song_id={{song.song_id}}"><button type="button">View</button></a>
+            <a href="/songs/{{song.song_id}}"><button type="button">View</button></a>
         </td>
         <td>
             {{song.title}}
         </td>
         <td>
             {% for artist in song.artists %}
-            <a href="artists?artist_id={{artist.artist_id}}">{{artist.name}}</a><br/>
+            <a href="/artists/{{artist.artist_id}}">{{artist.name}}</a><br/>
             {% endfor %}
         </td>
         <td>
