@@ -1,60 +1,51 @@
 {% include 'header.html' %}
 
-<div class="card">
+<div class="grid-container">
 
-    {% if session['admin'] == true %}
-<p><a href='/update?song_id={{song.song_id}}'><button type="button">Update</button></a>
-<a href="/delete?song_id={{song.song_id}}" onclick="return confirm('Delete {{song.title}}?')">
-                <button type="button">Delete</button>
-</a></p>
-    {% endif %}
+{% if session['admin'] == true %}
+    <div class="updelbuttons">
+        <a href='/update?song_id={{song.song_id}}'><button type="button">Update</button></a>
+        <a href="/delete?song_id={{song.song_id}}" onclick="return confirm('Delete {{song.title}}?')"><button type="button">Delete</button></a>
+    </div>
+{% endif %}
+
+<div class="coverimg">
+{% if img_url %}
+<img src="{{img_url}}" alt="Release image"/>
+{% endif %}
+
+</div>
+<h2 class="title">{{song.title}}</h2>
+<div class="info">
 <table>
-    <tr>
     {% if session['admin'] == true %}
-    <th>song_id</th>
+    <tr><td class="key">Song ID:</td><td>{{song.song_id}}</td></tr>
     {% endif %}
-    <th>Title</th>
-    <th>Artist(s)</th>
-    <th>Release(s)</th>
-    <th>Genre</th>
-    <th>Key</th>
-    <th>BPM</th>
-    <th>ISRC</th>
-    </tr>
-    <tr>
-        {% if session['admin'] == true %}
+    <tr><td class="key">Artist(s):</td>
         <td>
-            {{song.song_id}}
-        </td>
-        {% endif %}
-        <td>
-            {{song.title}}
-        </td>
-        <td>
-            {% for artist in song.artists %}
+        {% for artist in song.artists %}
             <a href="/artists/{{artist.artist_id}}">{{artist.name}}</a><br/>
-            {% endfor %}
-
+        {% endfor %}
         </td>
+    </tr>
+    <tr><td class="key">Release(s):</td>
         <td>
-            {% for release in song.releases %}
+        {% for release in song.releases %}
             <a href="/release?UPC={{release.UPC}}">{{release.title}}</a><br/>
-            {% endfor %}
-        </td>
-        <td>
-            {{song.genre}}
-        </td>
-        <td>
-            {{song.key}}
-        </td>
-        <td>
-            {{song.bpm}}
-        </td>
-        <td>
-            {{song.ISRC}}
+        {% endfor %}
         </td>
     </tr>
 </table>
 </div>
+<div class="info">
+<table>
+    <tr><td class="key">Genre:</td><td>{{song.genre}}</td></tr>
+    <tr><td class="key">Key:</td><td>{{song.key}}</td></tr>
+    <tr><td class="key">BPM:</td><td>{{song.bpm}}</td></tr>
+    <tr><td class="key">ISRC:</td><td>{{song.ISRC}}</td></tr>
+</table>
+
+</div>
+</div><!-- container -->
 
 {% include 'footer.html' %}

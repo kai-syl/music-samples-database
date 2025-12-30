@@ -24,6 +24,7 @@ class Artist(db.Model):
     name = db.Column(db.String)
     nationality = db.Column(db.String)
     genre = db.Column(db.String)
+    url = db.Column(db.String)
 
 class Song(db.Model):
     __tablename__ = 'song'

@@ -26,3 +26,35 @@ def get_album_cover(album_uri):
     sp = spotipy.Spotify(client_credentials_manager=auth_manager)
     album = sp.album(album_uri)
     return album['images'][0]['url']
+
+def get_artist_img(artist_uri):
+    sp = spotipy.Spotify(client_credentials_manager=auth_manager)
+    artist = sp.artist(artist_uri)
+    return artist['images'][0]['url']
+
+def artist_search(artist_name, limit=10):
+    sp = spotipy.Spotify(client_credentials_manager=auth_manager)
+    results = sp.search(q='artist:' + artist_name, type='artist')
+    items = results['artists']['items']
+
+    if len(items) > 0:
+        artists = {}
+        count = 0
+        for artist in items:
+            artists[artist['name']] = artist
+            count += 1
+            if count >= limit:
+                break
+        #print("Found artists:", artists)
+        return artists
+    else:
+        return None
+    
+# Testing
+if __name__ == "__main__":
+    name = 'Bjork'
+    info = artist_search(name, limit=1)
+    if info is not None and name in info:
+        print(info[name]['external_urls']['spotify'])
+    else:
+        print("Artist not found")

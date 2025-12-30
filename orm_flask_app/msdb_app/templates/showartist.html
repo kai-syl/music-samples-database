@@ -1,44 +1,42 @@
 {% include 'header.html' %}
 
-<div class="card">
+<div class="grid-container">
+
     {% if session['admin'] == true %}
-<p><a href='update?artist_id={{artist.artist_id}}"'><button type="button">Update</button></a>
-<a href="delete?artist_id={{artist.artist_id}}" onclick="return confirm('Delete {{artist.name}}?')">
-                <button type="button">Delete</button>
-</a></p>
+        <div class="updelbuttons">
+            <a href='/update?artist_id={{artist.artist_id}}'><button type="button">Update</button></a>
+            <a href="/delete?artist_id={{artist.artist_id}}" onclick="return confirm('Delete {{artist.name}}?')"><button type="button">Delete</button></a>
+        </div>
     {% endif %}
-<table>
-    <tr>
-    {% if session['admin'] == true %}
-    <th>artist_id</th>
+
+    <div class="coverimg">
+    {% if img_url %}
+    <img src="{{img_url}}" alt="Artist image"/>
     {% endif %}
-    <th>Name</th>
-    <th>Nationality</th>
-    <th>Genre</th>
-    <th>Songs</th>
-    </tr>
-    
-    <tr>
-        {% if session['admin'] == true %}
-        <td>
-            {{artist.artist_id}}
-        </td>
-        {% endif %}
-        <td>
-            {{artist.name}}
-        </td>
-        <td>
-            {{artist.nationality}}
-        </td>
-        <td>
-            {{artist.genre}}
-        </td>     
-        <td>
-            {% for song in artist.songs %}
-            <a href="songs/{{song.song_id}}">{{song.title}}</a><br/>
-            {% endfor %}
-        </td>
-    </tr>
-</table>
-</div>
+
+    </div>
+    <h2 class="title">{{artist.name}}</h2>
+    <div class="info">
+        <table>
+            {% if session['admin'] == true %}
+            <tr><td class="key">Artist ID:</td><td>{{artist.artist_id}}</td></tr>
+            {% endif %}
+            <tr><td class="key">Nationality:</td><td>{{artist.nationality}}</td></tr>
+            <tr><td class="key">Primary Genre:</td><td>{{artist.genre}}</td></tr>
+        </table>
+    </div>
+    <div class="info">
+        <table>
+            <tr><td class="key">Songs in database:</td>
+                <td>
+                {% for song in artist.songs %}
+                    <a href="/songs/{{song.song_id}}">{{song.title}}</a><br/>
+                {% endfor %}
+                </td>
+            </tr>
+        </table>
+
+    </div>
+</div><!-- container -->
+
 {% include 'footer.html' %}

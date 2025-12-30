@@ -1,0 +1,27 @@
+{% include 'header.html' %}
+
+<form action="" method="get">
+    <label for="name">Search artist: </label>
+        <input id="name" type="text" name="name" />
+    <button type="submit">Search</button>
+</form>
+
+{% if artists is defined %}
+
+<h2>Search results:</h2>
+{% if artists == None %}
+<p>No artists found.</p>
+{% else %}
+<ul>
+    {% for key, value in artists.items() %}
+
+    <li class="coverimg">
+        <img src="{{value['images'][0]['url']}}"/><br/>
+        <a href="{{value['external_urls']['spotify']}}">{{key}}</a>
+    </li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endif %}
+
+{% include 'footer.html' %}

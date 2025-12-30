@@ -63,11 +63,12 @@ def index():
 @app.route('/login')
 def login():
     if session.get('user') is not None:
-        return redirect('/login/success')
+        return redirect(request.referrer or '/login/success')
     else:
         authentik = OAuth2Session(client_id, redirect_uri=redirect_uri)
         authorization_url, state = authentik.authorization_url(authorization_base_url)
         session['oauth_state'] = state
+        session['referrer'] = request.referrer
         return redirect(authorization_url)
     
 @app.route('/login/callback')
@@ -83,7 +84,12 @@ def callback():
         session['admin'] = True
     else:
         session['admin'] = False
-    return redirect('/login/success')
+    if session.get('referrer') is not None:
+        url = session['referrer']
+        session.pop('referrer', None)
+        return redirect(url)
+    else:
+        return redirect(url_for('login_success'))
 
 @app.route('/login/success')
 def login_success():
@@ -103,8 +109,7 @@ def logout():
     else:
         session.clear()
         session['logged_out'] = True
-        # TODO: remove _external and _scheme after setting up WSGI
-        if request.referrer == url_for('login_success', _external=True, _scheme='https') or request.referrer == url_for('userinfo', _external=True, _scheme='https'):
+        if request.referrer == url_for('login_success') or request.referrer == url_for('userinfo'):
             return redirect('/')
         else:
             return redirect(request.referrer or '/')
@@ -125,9 +130,25 @@ def showArtists():
 @app.route('/artists/<int:artist_id>')
 def showArtistByID(artist_id):
     artist = Artist.query.get(artist_id)
+    if artist.url is None or artist.url == 'None' or artist.url == '':
+        img_url = None
+    else:
+        img_url = spotApi.get_artist_img(artist.url)
     if artist is None:
         return redirect('/artists')
-    return render_template("showartist.html", artist=artist)
+    return render_template("showartist.html", artist=artist, img_url=img_url)
+
+@app.route('/test/artists/search')
+def artistSearch():
+    if not checkAdmin():
+        return redirect('/denied')
+    if request.args.get('name'):
+        name = request.args.get('name')
+        artists = spotApi.artist_search(name)
+        return render_template("artistsearch.html", artists=artists)
+    else:
+        return render_template("artistsearch.html")
+
 
 @app.route('/insertartist')
 def insertArtistForm():
@@ -136,13 +157,38 @@ def insertArtistForm():
     songsAvailable = Song.query.all()
     return render_template("insertform.html", t="artist", songsAvailable=songsAvailable)
 
+### OLD NEW ARTIST - kept for reference
+# @app.route('/newartist')
+# def insertArtist():
+#     if not checkAdmin():
+#         return redirect('/denied')
+#     if request.args.get('name') is not None:
+#         artist = Artist(
+#             name=request.args.get("name"), 
+#             nationality=request.args.get("nationality"), 
+#             genre=request.args.get("genre"),
+#         )
+#         if request.args.getlist('songs'):
+#                 for song in request.args.getlist('songs'):
+#                     if song == '' or song is None:
+#                         continue
+#                     else: 
+#                         s = Song.query.get(song)
+#                         artist.songs.append(s)
+#         db.session.add(artist)
+#         db.session.commit()
+#         return redirect("artists")
+#     else:
+#         return redirect("insertartist")
+
 @app.route('/newartist')
 def insertArtist():
     if not checkAdmin():
         return redirect('/denied')
     if request.args.get('name') is not None:
+        name = request.args.get("name")
         artist = Artist(
-            name=request.args.get("name"), 
+            name=name, 
             nationality=request.args.get("nationality"), 
             genre=request.args.get("genre"),
         )
@@ -153,9 +199,13 @@ def insertArtist():
                     else: 
                         s = Song.query.get(song)
                         artist.songs.append(s)
+        spotifyInfo = spotApi.artist_search(name, limit=1)
+        if spotifyInfo is not None and name in spotifyInfo:
+            artist.url = spotifyInfo[name]['external_urls']['spotify']
         db.session.add(artist)
         db.session.commit()
-        return redirect("artists")
+        newArtist = Artist.query.filter_by(name=name).first()
+        return redirect("/artists/" + str(newArtist.artist_id))
     else:
         return redirect("insertartist")
     
@@ -167,6 +217,7 @@ def updateArtist():
     artist.name = request.args.get('name')
     artist.nationality = request.args.get('nationality')
     artist.genre = request.args.get('genre')
+    artist.url = request.args.get('url')
     songs = [int(x) for x in request.args.getlist('songs')]
 
     for song in artist.songs:
@@ -199,7 +250,12 @@ def showSongByID(song_id):
     song = Song.query.get(song_id)
     if song is None:
         return redirect('/songs')
-    return render_template("showsong.html", song=song)
+    release = Release.query.filter(Release.songs.any(song_id=song.song_id)).first()
+    if release and release.url is not None and release.url != 'None':
+        img_url = spotApi.get_album_cover(release.url)
+    else:
+        img_url = None
+    return render_template("showsong.html", song=song, img_url=img_url)
 
 @app.route('/insertsong')
 def insertSongForm():
