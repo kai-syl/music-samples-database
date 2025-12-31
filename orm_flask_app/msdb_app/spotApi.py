@@ -49,12 +49,20 @@ def artist_search(artist_name, limit=10):
         return artists
     else:
         return None
-    
+
+def get_song_ISRC(track_url):
+    sp = spotipy.Spotify(client_credentials_manager=auth_manager)
+    track = sp.track(track_url)
+    return track['external_ids']['isrc']
+
 # Testing
 if __name__ == "__main__":
-    name = 'Bjork'
-    info = artist_search(name, limit=1)
-    if info is not None and name in info:
-        print(info[name]['external_urls']['spotify'])
-    else:
-        print("Artist not found")
+    # name = 'Bjork'
+    # info = artist_search(name, limit=1)
+    # if info is not None and name in info:
+    #     print(info[name]['external_urls']['spotify'])
+    # else:
+    #     print("Artist not found")
+    url = "https://open.spotify.com/track/7ov8ngNN9Vol0IyKo4guzS?si=9e2faef7b2964976"
+    track = get_song_ISRC(url)
+    print(track['external_ids']['isrc'])

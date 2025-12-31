@@ -35,6 +35,7 @@ class Song(db.Model):
     bpm = db.Column(db.String)
     genre = db.Column(db.String)
     ISRC = db.Column(db.String)
+    url = db.Column(db.String)
     artists = db.relationship("Artist", secondary=artist_song, backref='songs', lazy='dynamic')
     #releases = db.relationship('Release', secondary=release_song, backref='songs', lazy='dynamic')
 

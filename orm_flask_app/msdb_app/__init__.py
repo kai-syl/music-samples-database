@@ -51,7 +51,7 @@ def checkAdmin():
     else:
         return False
 
-songKeys = ['N/A', 'AM', 'Am', 'BbM', 'Bbm', 'BM', 'Bm', 'CM', 'Cm', 'DbM', 'Dbm', 'DM', 
+songKeys = ['N/A', 'AbM', 'Abm', 'AM', 'Am', 'BbM', 'Bbm', 'BM', 'Bm', 'CM', 'Cm', 'DbM', 'Dbm', 'DM',
             'Dm', 'EbM', 'Ebm', 'EM', 'Em', 'FM', 'Fm', 'GbM', 'Gbm', 'GM', 'Gm']
 
 @app.route('/')
@@ -274,7 +274,6 @@ def insertSong():
             key = request.args.get('key'),
             bpm = request.args.get('bpm'),
             genre = request.args.get('genre'),
-            ISRC = request.args.get('ISRC')
         )
         if request.args.getlist('artists'):
                 for artist in request.args.getlist('artists'):
@@ -283,6 +282,13 @@ def insertSong():
                     else: 
                         a = Artist.query.get(artist)
                         song.artists.append(a)
+        if request.args.get('ISRC') and request.args.get('url') is None:
+            ISRC = request.args.get('ISRC')
+            song.ISRC = ISRC
+        elif request.args.get('url'):
+            ISRC = spotApi.get_song_ISRC(request.args.get('url'))
+            song.ISRC = ISRC
+            song.url = request.args.get('url')
         db.session.add(song)
         db.session.commit()
         return redirect("songs")
