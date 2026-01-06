@@ -55,6 +55,18 @@ def get_song_ISRC(track_url):
     track = sp.track(track_url)
     return track['external_ids']['isrc']
 
+def get_album_info(album_url):
+    sp = spotipy.Spotify(client_credentials_manager=auth_manager)
+    album = sp.album(album_url)
+    # return album['external_ids']['upc']
+    return album
+
+def get_song_info(track_url):
+    sp = spotipy.Spotify(client_credentials_manager=auth_manager)
+    track = sp.track(track_url)
+    return track
+
+
 # Testing
 if __name__ == "__main__":
     # name = 'Bjork'
@@ -63,6 +75,12 @@ if __name__ == "__main__":
     #     print(info[name]['external_urls']['spotify'])
     # else:
     #     print("Artist not found")
-    url = "https://open.spotify.com/track/7ov8ngNN9Vol0IyKo4guzS?si=9e2faef7b2964976"
-    track = get_song_ISRC(url)
-    print(track['external_ids']['isrc'])
+    url = "https://open.spotify.com/album/3kse3e9XxmIedJb9bfjErH?si=9500e41cbbd749f1"
+    
+    album = get_album_info(url)
+    
+    track_url = "https://open.spotify.com/track/0fwktLgGSjgVieYm6JkA7R?si=2282d81c247342ea"
+    track = get_song_info(track_url)
+
+    # print(json.dumps(track, indent=2))
+    # print(json.dumps(album, indent=2))

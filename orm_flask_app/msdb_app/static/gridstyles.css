@@ -316,6 +316,15 @@ label {
   flex: 1;
 }
 
+form input::after, select::after {
+  content: "\A";
+  white-space: pre;
+}
+
+#hide-elements {
+  display: none;
+}
+
 /* Tables */
 table {
   margin: auto;

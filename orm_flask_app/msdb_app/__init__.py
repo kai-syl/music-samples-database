@@ -234,7 +234,7 @@ def updateArtist():
             else:
                 artist.songs.append(s)
     db.session.commit()
-    return redirect('artists')
+    return redirect('/artists/' + str(artist.artist_id))
 
 ### Songs
 @app.route('/songs')
@@ -255,7 +255,20 @@ def showSongByID(song_id):
         img_url = spotApi.get_album_cover(release.url)
     else:
         img_url = None
-    return render_template("showsong.html", song=song, img_url=img_url)
+    if 1 in [artist.artist_id for artist in song.artists]:
+        owner = True
+        if song.samplesUsed != []:
+            for sample in song.samplesUsed:
+                if Song.query.filter_by(source_id=sample.source_id).first() is not None:
+                    sourceName = Song.query.filter_by(source_id=sample.source_id).first().title
+                elif Repo.query.filter_by(source_id=sample.source_id).first() is not None:
+                    sourceName = Repo.query.filter_by(source_id=sample.source_id).first().name
+        else:
+            sourceName = False
+    else:
+        owner = False
+        sourceName = False
+    return render_template("showsong.html", song=song, img_url=img_url, owner=owner, sourceName=sourceName)
 
 @app.route('/insertsong')
 def insertSongForm():
@@ -265,16 +278,30 @@ def insertSongForm():
     return render_template("insertform.html", t="song", songKeys=songKeys, artistsAvailable=artists)
 
 @app.route('/newsong')
-def insertSong():
+def InsertSong():
     if not checkAdmin():
         return redirect('/denied')
-    if request.args.get('title') is not None:
+    if request.args.get('title') is not None or request.args.get('url') is not None:
         song = Song(
-            title = request.args.get('title'),
             key = request.args.get('key'),
             bpm = request.args.get('bpm'),
             genre = request.args.get('genre'),
         )
+        if request.args.get('url') is not None:
+            
+            track_info = spotApi.get_song_info(request.args.get('url'))
+            song.url = track_info['external_urls']['spotify']
+            song.title = track_info['name']
+            song.ISRC = track_info['external_ids']['isrc']
+
+            release_url = track_info['album']['external_urls']['spotify']
+            releaseInDB = Release.query.filter_by(url=release_url).first()
+            
+            if releaseInDB is not None:
+                song.releases.append(releaseInDB)
+        else:
+            song.title = request.args.get('title')
+            song.ISRC = request.args.get('ISRC')
         if request.args.getlist('artists'):
                 for artist in request.args.getlist('artists'):
                     if artist == '' or artist is None:
@@ -282,16 +309,10 @@ def insertSong():
                     else: 
                         a = Artist.query.get(artist)
                         song.artists.append(a)
-        if request.args.get('ISRC') and request.args.get('url') is None:
-            ISRC = request.args.get('ISRC')
-            song.ISRC = ISRC
-        elif request.args.get('url'):
-            ISRC = spotApi.get_song_ISRC(request.args.get('url'))
-            song.ISRC = ISRC
-            song.url = request.args.get('url')
         db.session.add(song)
         db.session.commit()
-        return redirect("songs")
+        newSong_id = Song.query.filter_by(title=song.title).first().song_id
+        return redirect("/songs/" + str(newSong_id))
     
 @app.route('/updatesong')
 def updateSong():
@@ -523,7 +544,9 @@ def updateRelease():
                             continue
                         else:
                             release.songs.append(s)
-
+            elif i == 'url':
+                info = spotApi.get_album_info(attrs[i])
+                release.url = info['external_urls']['spotify']
             else:
                 release.__setattr__(i, attrs[i])
         db.session.commit()
@@ -544,12 +567,21 @@ def insertRelease():
         return redirect('/denied')
     if request.args.get('UPC') is not None:
         release = Release(
-            UPC=request.args.get('UPC'),
-            title=request.args.get('title'),
-            type=request.args.get('type'),
-            numSongs=request.args.get('numSongs'),
-            releaseDate=request.args.get('releaseDate')
+            type=request.args.get('type')
         )
+        if request.args.get('url'):
+            release.url = request.args.get('url')
+            info = spotApi.get_album_info(release.url)
+            release.UPC = info['external_ids']['upc']
+            release.title = info['name']
+            release.numSongs = info['total_tracks']
+            release.releaseDate = info['release_date']
+        else:
+            release.UPC = request.args.get('UPC')
+            release.title=request.args.get('title')
+            release.numSongs=request.args.get('numSongs')
+            release.releaseDate=request.args.get('releaseDate')
+
         if request.args.getlist('songs'):
             for song in request.args.getlist('songs'):
                 if song == '' or song is None:
@@ -557,8 +589,6 @@ def insertRelease():
                 else: 
                     s = Song.query.get(song)
                     release.songs.append(s)
-        if request.args.get('url'):
-            release.url = request.args.get('url')
         db.session.add(release)
         db.session.commit()
         return redirect(f"release?UPC={release.UPC}")

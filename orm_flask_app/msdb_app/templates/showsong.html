@@ -25,6 +25,7 @@
         <td>
         {% for artist in song.artists %}
             <a href="/artists/{{artist.artist_id}}">{{artist.name}}</a><br/>
+            {% if artist.artist_id == 1 %} {% set revenxnt = true %} {% endif %}
         {% endfor %}
         </td>
     </tr>
@@ -46,6 +47,19 @@
 </table>
 
 </div>
+{% if owner == True %}
+<div class="info">
+    <table>
+        <tr><td class="key">Samples:</td><td>
+            {% if song.samplesUsed|length != 0 %}
+                {% for sample in song.samplesUsed %}
+                <a href="/samples/{{sample.sample_id}}">{{sample.instrument}} - {{sourceName}}</a><br/>
+                {% endfor %}
+            {% endif %}
+        </td></tr>
+    </table>
+</div>
+{% endif %}
 </div><!-- container -->
 
 {% include 'footer.html' %}

@@ -167,7 +167,7 @@
 </div>
     <label for="url">Spotify URL: </label>
     <input id="url" type="text" name="url" value="{{release.url}}"/><br />
-    <br/><button type="submit" onclick="selectAll('songs')">Update release</button>
+    <br/><button type="submit" onclick="if(validateSpotifyUrl(document.getElementById('url'), 'release')) { selectAll('songs') } else { return false; }">Update release</button>
 </form>
 
 {% elif request.args.source_id is defined %}
