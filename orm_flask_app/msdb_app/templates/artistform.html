@@ -1,0 +1,73 @@
+{% if a == 'insert' %}
+
+<form action="/newartist">
+    <label for="name">Artist name: </label><input id="name" type="text" name="name" /><br />
+    <label for="checkSpot">Check Spotify for artist?</label>
+    <input type="radio" id="yes" name="checkSpot" value="yes" />
+        <label for="yes" style="display: inline !important;">Yes</label>
+    <input type="radio" id="no" name="checkSpot" value="no" checked />
+        <label for="no" style="display: inline !important;">No</label>
+    
+    <label for="nationality">Nationality: </label><input id="nationality" type="text" name="nationality" /><br />
+    <label for="genre">Genre: </label><input id="genre" type="text" name="genre" /><br />
+
+<div style='width: fit-content; min-width: 400px; display: flex;'>
+    <div style="float: left; margin-right: 5%; WIDTH: auto;">
+    <label for="songs">Songs: </label>
+        <select name="songs" id="songs" multiple size="10" style="min-width: 205px; width: fit-content;">
+        </select>
+    </div>
+    <div style="float: left; width: 50px; height: 242px; line-height: 121px;">
+        <button type="button" onclick="moveItems('left', 'songs')"><i class="arrow left"></i></button>
+        <button type="button" onclick="moveItems('right', 'songs')"><i class="arrow right"></i></button>
+    </div>
+    <div style="float: left; margin-left: 5%;">
+    <label for="songsAvailable" >Add songs: </label>
+        <select id="songsAvailable" name="songsAvailable" multiple size="10" style="min-width: 205px; width: fit-content;">
+            {% for song in songsAvailable %}
+            <option value="{{song.song_id}}">{{song.title}}</option>
+            {% endfor %}
+        </select>
+        
+    </div>
+</div>
+
+    <button type="submit" onclick="selectAll('songs')">Insert new artist</button>
+</form>
+
+{% elif a == 'update' %}
+
+<form class="form-inline" action="/updateartist">
+    <input type="hidden" name="artist_id" value="{{artist.artist_id}}" />
+    <label for="name">Artist name: </label><input id="name" type="text" name="name" / value="{{artist.name}}"><br />
+    <label for="nationality">Nationality: </label><input id="nationality" type="text" name="nationality" value="{{artist.nationality}}"/><br />
+    <label for="genre">Genre: </label><input id="genre" type="text" name="genre" value="{{artist.genre}}"/><br />
+    <label for="url">Spotify URL: </label><input id="url" type="text" name="url" value="{{artist.url}}"/><br />
+<div style='width: fit-content; min-width: 400px; display: flex;'>
+    <div style="float: left; margin-right: 5%; WIDTH: auto;">
+    <label for="songs">Songs: </label><br/>
+        <select name="songs" id="songs" multiple size="10" style="min-width: 205px; width: fit-content;">
+            {% for song in artist.songs %}
+            <option value="{{song.song_id}}">{{song.title}}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div style="float: left; width: 50px; height: 242px; line-height: 121px;">
+        <button type="button" onclick="moveItems('left', 'songs')"><i class="arrow left"></i></button>
+        <button type="button" onclick="moveItems('right', 'songs')"><i class="arrow right"></i></button>
+    </div>
+    <div style="float: left; margin-left: 5%;">
+    <label for="songsAvailable" >Add songs: </label><br/>
+        <select id="songsAvailable" name="songsAvailable" multiple size="10" style="min-width: 205px; width: fit-content;">
+            {% for song in songsAvailable %}
+            <option value="{{song.song_id}}">{{song.title}}</option>
+            {% endfor %}
+        </select>
+        
+    </div>
+</div>
+    <br style="clear: both;"/>
+    <button type="submit" onclick="selectAll('songs')">Update artist</button>
+</form>
+
+{% endif %}

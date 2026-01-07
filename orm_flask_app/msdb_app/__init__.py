@@ -155,31 +155,7 @@ def insertArtistForm():
     if not checkAdmin():
         return redirect('/denied')
     songsAvailable = Song.query.all()
-    return render_template("insertform.html", t="artist", songsAvailable=songsAvailable)
-
-### OLD NEW ARTIST - kept for reference
-# @app.route('/newartist')
-# def insertArtist():
-#     if not checkAdmin():
-#         return redirect('/denied')
-#     if request.args.get('name') is not None:
-#         artist = Artist(
-#             name=request.args.get("name"), 
-#             nationality=request.args.get("nationality"), 
-#             genre=request.args.get("genre"),
-#         )
-#         if request.args.getlist('songs'):
-#                 for song in request.args.getlist('songs'):
-#                     if song == '' or song is None:
-#                         continue
-#                     else: 
-#                         s = Song.query.get(song)
-#                         artist.songs.append(s)
-#         db.session.add(artist)
-#         db.session.commit()
-#         return redirect("artists")
-#     else:
-#         return redirect("insertartist")
+    return render_template("form.html", t="artist", a="insert", songsAvailable=songsAvailable)
 
 @app.route('/newartist')
 def insertArtist():
@@ -199,9 +175,10 @@ def insertArtist():
                     else: 
                         s = Song.query.get(song)
                         artist.songs.append(s)
-        spotifyInfo = spotApi.artist_search(name, limit=1)
-        if spotifyInfo is not None and name in spotifyInfo:
-            artist.url = spotifyInfo[name]['external_urls']['spotify']
+        if request.args.get('checkSpot') == 'yes':
+            spotifyInfo = spotApi.artist_search(name, limit=1)
+            if spotifyInfo is not None and name in spotifyInfo:
+                artist.url = spotifyInfo[name]['external_urls']['spotify']
         db.session.add(artist)
         db.session.commit()
         newArtist = Artist.query.filter_by(name=name).first()
@@ -275,7 +252,7 @@ def insertSongForm():
     if not checkAdmin():
         return redirect('/denied')
     artists = Artist.query.all()
-    return render_template("insertform.html", t="song", songKeys=songKeys, artistsAvailable=artists)
+    return render_template("form.html", t="song", a="insert", songKeys=songKeys, artistsAvailable=artists)
 
 @app.route('/newsong')
 def InsertSong():
@@ -396,7 +373,7 @@ def showRepo(source_id):
 def insertRepoForm():
     if not checkAdmin():
         return redirect('/denied')
-    return render_template("insertform.html", t="repo")
+    return render_template("form.html", t="repo", a="insert")
 
 @app.route('/newrepo')
 def insertRepo():
@@ -443,7 +420,7 @@ def insertSampleForm():
     
     # Get songs by artist 1 (me) for "used on" selection
     songsAvailable = Artist.query.get(1).songs
-    return render_template("insertform.html", t="sample", sources=sources, songsAvailable=songsAvailable)
+    return render_template("form.html", t="sample", a="insert", sources=sources, songsAvailable=songsAvailable)
 
 @app.route('/updatesample')
 def updateSample():
@@ -559,7 +536,7 @@ def insertReleaseForm():
     if not checkAdmin():
         return redirect('/denied')
     otherSongs = Song.query.all()
-    return render_template("insertform.html", t="release", songsAvailable=otherSongs)
+    return render_template("form.html", t="release", a="insert", songsAvailable=otherSongs)
 
 @app.route('/newrelease')
 def insertRelease():
@@ -597,6 +574,7 @@ def insertRelease():
 
 @app.route('/update')
 def updateForm():
+    a = 'update'
     if not checkAdmin():
         return redirect('/denied')
     
@@ -608,7 +586,7 @@ def updateForm():
         else:
             songs = [x.song_id for x in artist.songs]
             songsAvailable = Song.query.filter(Song.song_id.not_in(songs)).all()
-            return render_template("updateform.html", artist=artist, songsAvailable=songsAvailable)
+            return render_template("form.html", t="artist", a=a, artist=artist, songsAvailable=songsAvailable)
     elif request.args.get('song_id') is not None:
     ### SONGS
         song = Song.query.get(request.args.get('song_id'))
@@ -617,7 +595,7 @@ def updateForm():
         if song is None:
             return redirect('songs')
         else:
-            return render_template("updateform.html", song=song, artistsAvailable=artistsAvailable, songKeys=songKeys)
+            return render_template("form.html", t="song", a=a, song=song, artistsAvailable=artistsAvailable, songKeys=songKeys)
     elif request.args.get('sample_id') is not None:
     ### SAMPLES
         sample = Sample.query.get(request.args.get('sample_id'))
@@ -657,7 +635,7 @@ def updateForm():
                 for r in Repo.query.all():
                     otherSources.append(r)
             
-            return render_template("updateform.html", 
+            return render_template("form.html", t="sample", a='update',
                                    sample=sample, 
                                    source=source, 
                                    otherSources=otherSources,
@@ -669,14 +647,14 @@ def updateForm():
             return redirect('/')
         else:
             otherSongs = Song.query.filter(Song.song_id.not_in([s.song_id for s in release.songs]))
-            return render_template("updateform.html", release=release, otherSongs=otherSongs)
+            return render_template("form.html", t="release", a=a, release=release, otherSongs=otherSongs)
     elif request.args.get('source_id') is not None:
     ### REPOS
         repo = Repo.query.get(request.args.get('source_id'))
         if repo is None:
             return redirect('repo')
         else:
-            return render_template("updateform.html", repo=repo)
+            return render_template("form.html", t="repo", a=a, repo=repo)
     else:
         return redirect("/")
 

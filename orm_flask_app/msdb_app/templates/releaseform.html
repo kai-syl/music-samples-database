@@ -1,0 +1,85 @@
+{% if a == 'insert' %}
+
+<form action="/newrelease">
+    <label for="url">Spotify URL: </label><input id="url" type="text" name="url" required/>
+    <label for="type">Type: </label>
+        <select id="type" name="type" reuired>
+            <option value="">--Please select a type--</option>
+            <option value="album">Album</option>
+            <option value="single">Single</option>
+            <option value="EP">EP</option>
+        </select>
+    <div id="hide-elements">
+        <label for="UPC">UPC: </label><input id="UPC" type="number" name="UPC" maxlength="15" />
+        <label for="title">Release title: </label><input id="title" type="text" name="title" />
+        <label for="releaseDate">Release date: </label><input id="releaseDate" type="date" name="releaseDate" />
+        <label for="numSongs"># of songs: </label><input id="numSongs" type="number" name="numSongs" min="1"/>
+    </div>
+<div style='width: fit-content; min-width: 400px; display: flex;'>
+    <div style="float: left; margin-right: 5%; WIDTH: auto;">
+    <label for="songs">Songs:</label><br/>
+        <select name="songs" id="songs" multiple size="10" style="min-width: 205px; width: fit-content;">
+        </select>
+    </div>
+    <div style="float: left; width: 50px; height: 242px; line-height: 121px;">
+        <button type="button" onclick="moveItems('left', 'songs')"><i class="arrow left"></i></button>
+        <button type="button" onclick="moveItems('right', 'songs')"><i class="arrow right"></i></button>
+    </div>
+    <div style="float: left; margin-left: 5%;">
+    <label for="songsAvailable" >Add songs: </label><br/>
+        <select id="songsAvailable" name="songsAvailable" multiple size="10" style="min-width: 205px; width: fit-content;">
+            {% for song in songsAvailable %}
+            <option value="{{song.song_id}}">{{song.title}}</option>
+            {% endfor %}
+        </select>
+        
+    </div>
+</div>
+    <button type="button" onclick="showHideElements(['hide-elements'])">Show/Hide additional fields</button>
+    <button type="submit" onclick="if(validateSpotifyUrl(document.getElementById('url'), 'release')) { selectAll('songs') } else { return false; }">Insert new release</button>
+</form>
+
+{% elif a == 'update' %}
+
+<form class="form-inline" action="/updaterelease">
+    <label for="UPC">UPC: </label><input type="number" id="UPC" name="UPC" value="{{release.UPC}}" maxlength="15" /><br />
+    <label for="title">Title: </label><input id="title" type="text" name="title" value="{{release.title}}"/><br />
+    <label for="releaseDate">Release Date: </label><input id="releaseDate" type="date" name="releaseDate" value="{{release.releaseDate}}"/><br />
+    <label for="type">Type: </label>
+        <select id="type" name="type">
+            <option value="album" {% if release.type == 'album' %}selected{% endif %}>Album</option>
+            <option value="single" {% if release.type == 'single' %}selected{% endif %}>Single</option>
+            <option value="EP" {% if release.type == 'EP' %}selected{% endif %}>EP</option>
+        </select><br />
+    <label for="numSongs"># of songs: </label><input id="numSongs" type="number" name="numSongs" min="1" value="{{release.numSongs}}"/><br />
+
+<div style='width: fit-content; min-width: 400px; display: flex;'>
+    <div style="float: left; margin-right: 5%; WIDTH: auto;">
+    <label for="songs">Songs:</label><br/>
+        <select name="songs" id="songs" multiple size="10" style="min-width: 205px; width: fit-content;">
+            {% for song in release.songs %}
+            <option value="{{song.song_id}}">{{song.title}}</option>
+            {% endfor %}
+            <option value="-1" hidden></option>
+        </select>
+    </div>
+    <div style="float: left; width: 50px; height: 242px; line-height: 121px;">
+        <button type="button" onclick="moveItems('left', 'songs')"><i class="arrow left"></i></button>
+        <button type="button" onclick="moveItems('right', 'songs')"><i class="arrow right"></i></button>
+    </div>
+    <div style="float: left; margin-left: 5%;">
+    <label for="songsAvailable" >Add songs: </label><br/>
+        <select id="songsAvailable" name="songsAvailable" multiple size="10" style="min-width: 205px; width: fit-content;">
+            {% for song in otherSongs %}
+            <option value="{{song.song_id}}">{{song.title}}</option>
+            {% endfor %}
+        </select>
+        
+    </div>
+</div>
+    <label for="url">Spotify URL: </label>
+    <input id="url" type="text" name="url" value="{{release.url}}"/><br />
+    <br/><button type="submit" onclick="if(validateSpotifyUrl(document.getElementById('url'), 'release')) { selectAll('songs') } else { return false; }">Update release</button>
+</form>
+
+{% endif %}

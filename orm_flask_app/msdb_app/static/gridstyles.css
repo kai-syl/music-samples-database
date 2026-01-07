@@ -321,6 +321,10 @@ form input::after, select::after {
   white-space: pre;
 }
 
+form input[type='radio']::after {
+  content: "" !important;
+}
+
 #hide-elements {
   display: none;
 }

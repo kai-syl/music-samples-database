@@ -1,0 +1,96 @@
+{% if a == 'insert' %}
+<form action="/newsample">
+    <label for="instrument">Instrument: </label>
+        <input id="instrument" type="text" name="instrument" required/><br />
+    <label for="genre">Genre: </label>
+        <input id="genre" type="text" name="genre" required/><br />
+    <label for="source_id">Source: </label>
+        <select id="source_id" name="source_id" required>
+            <option value="">--Please select a source--</option>
+            {% for source in sources %}
+            <option value="{{source.source_id}}">
+                {% if source.name %}
+                {{source.name}}
+                {% elif source.title %}
+                {{source.title}}
+                {% endif %}
+            </option>
+            {% endfor %}
+        </select><br />
+    
+<div style='width: fit-content; min-width: 400px; display: flex;'>
+    <div style="float: left; margin-right: 5%; WIDTH: auto;">
+    <label for="on_songs">Used on: </label>
+        <select name="on_songs" id="on_songs" multiple size="10" style="min-width: 205px; width: fit-content;">
+        </select>
+    </div>
+    <div style="float: left; width: 50px; height: 242px; line-height: 121px;">
+        <button type="button" onclick="moveItems('left', 'on_songs')"><i class="arrow left"></i></button>
+        <button type="button" onclick="moveItems('right', 'on_songs')"><i class="arrow right"></i></button>
+    </div>
+    <div style="float: left; margin-left: 5%;">
+    <label for="songsAvailable" >Add song(s): </label>
+        <select id="songsAvailable" name="songsAvailable" multiple size="10" style="min-width: 205px; width: fit-content;">
+            {% for song in songsAvailable %}
+            <option value="{{song.song_id}}">{{song.title}}</option>
+            {% endfor %}
+        </select>
+        
+    </div>
+</div>
+    
+    <button type="submit" onclick="selectAll('on_songs')">Insert new sample</button>
+</form>
+
+{% elif a == 'update' %}
+
+<form class="form-inline" action="/updatesample">
+    <input type="hidden" name="sample_id" value="{{sample.sample_id}}" />
+    <label for="instrument">Instrument: </label><input id="instrument" type="text" name="instrument" value="{{sample.instrument}}"/><br />
+    <label for="genre">Genre: </label><input id="genre" type="text" name="genre" value="{{sample.genre}}"/><br />
+    <label for="source">Source: </label>
+        <select id="source_id" name="source_id" required>
+            {% if source %}
+            <option value="{{sample.source_id}}">{{source}}</option>
+            {% else %}
+            <option value="">--Please select a source--</option>
+            {% endif %}
+            {% for source in otherSources %}
+            <option value="{{source.source_id}}">
+                {% if source.name %}
+                {{source.name}}
+                {% elif source.title %}
+                {{source.title}}
+                {% endif %}
+            </option>
+            {% endfor %}
+        </select><br />
+
+<div style='width: fit-content; min-width: 400px; display: flex;'>
+    <div style="float: left; margin-right: 5%; WIDTH: auto;">
+    <label for="on_songs">Used on: </label><br/>
+        <select name="on_songs" id="on_songs" multiple size="10" style="min-width: 205px; width: fit-content;">
+            {% for song in sample.on_songs %}
+            <option value="{{song.song_id}}">{{song.title}}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div style="float: left; width: 50px; height: 242px; line-height: 121px;">
+        <button type="button" onclick="moveItems('left', 'on_songs')"><i class="arrow left"></i></button>
+        <button type="button" onclick="moveItems('right', 'on_songs')"><i class="arrow right"></i></button>
+    </div>
+    <div style="float: left; margin-left: 5%;">
+    <label for="songsAvailable" >Add artist(s): </label><br/>
+        <select id="songsAvailable" name="songsAvailable" multiple size="10" style="min-width: 205px; width: fit-content;">
+            {% for song in songsAvailable %}
+            <option value="{{song.song_id}}">{{song.title}}</option>
+            {% endfor %}
+        </select>
+        
+    </div>
+</div>
+
+    <button type="submit" onclick="selectAll('on_songs')">Update sample</button>
+</form>
+
+{% endif %}
